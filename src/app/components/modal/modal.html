@@ -1,0 +1,78 @@
+@if (config) {
+  <div class="modal-overlay" (click)="clickOverlay($event)">
+    <div class="modal-card" role="dialog" aria-modal="true">
+
+      <div class="modal-icon" [ngClass]="'modal-icon--' + config.type">
+        @switch (config.type) {
+          @case ('success') {
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+          }
+          @case ('info') {
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01"/>
+              <circle cx="12" cy="12" r="10" stroke-linecap="round"/>
+            </svg>
+          }
+          @case ('error') {
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          }
+          @case ('prompt') {
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20 7H4a1 1 0 00-1 1v10a1 1 0 001 1h16a1 1 0 001-1V8a1 1 0 00-1-1zM16 3H8l-1 4h10l-1-4z"/>
+            </svg>
+          }
+        }
+      </div>
+
+      <h3 class="modal-title">{{ config.title }}</h3>
+
+      @if (config.message) {
+        <p class="modal-message">{{ config.message }}</p>
+      }
+
+      @if (config.rows && config.rows.length > 0) {
+        <div class="modal-rows">
+          @for (row of config.rows; track row.label) {
+            <div class="modal-row">
+              <span class="row-label">{{ row.label }}</span>
+              <span class="row-value">{{ row.value }}</span>
+            </div>
+          }
+        </div>
+      }
+
+      @if (config.type === 'prompt') {
+        <div class="modal-input-group">
+          @if (config.inputLabel) {
+            <label class="modal-input-label">{{ config.inputLabel }}</label>
+          }
+          <input
+            type="number"
+            class="modal-input"
+            [placeholder]="config.inputPlaceholder || '0'"
+            [min]="config.inputMin ?? 1"
+            [(ngModel)]="inputValue"
+            (keydown.enter)="confirmModal()"
+            autofocus
+          />
+        </div>
+      }
+
+      <div class="modal-actions" [class.has-cancel]="config.type === 'prompt'">
+        @if (config.type === 'prompt') {
+          <button [class]="'btn-secondary modal-btn'" (click)="cancelModal()">
+            {{ config.cancelLabel || 'Cancelar' }}
+          </button>
+        }
+        <button [class]="confirmClass + ' modal-btn'" (click)="confirmModal()">
+          {{ config.confirmLabel || 'Aceptar' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

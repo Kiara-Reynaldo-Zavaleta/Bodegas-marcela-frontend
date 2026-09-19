@@ -1,0 +1,107 @@
+<section class="welcome">
+  <h1>¡Bienvenida de nuevo Marcela!</h1>
+  <p>Hoy es un buen día para vender.</p>
+  <button class="btn-primary" routerLink="/ventas">+ Registrar nueva venta</button>
+</section>
+
+<main class="dashboard-body">
+  <div class="col-left">
+    <div class="card">
+      <h2 class="section-title">Ventas Recientes</h2>
+
+      @if (loading()) {
+        <p class="text-muted">Cargando...</p>
+      } @else if (boletas().length === 0) {
+        <p class="text-muted">No hay ventas registradas aún.</p>
+      } @else {
+        @for (boleta of boletas(); track boleta.id) {
+          <div class="boleta-card">
+            <div class="boleta-header">
+              <span class="boleta-id">Boleta #{{ boleta.id.toString().padStart(3, '0') }}</span>
+              <span class="badge" [ngClass]="badgeClass(boleta.estado)">{{ boleta.estado }}</span>
+            </div>
+            <div class="boleta-info">
+              <span><strong>Cliente:</strong> {{ boleta.clienteNombre }}</span>
+              <span><strong>DNI:</strong> {{ boleta.clienteDni }}</span>
+              <span><strong>Items:</strong> {{ boleta.detalles.length }}</span>
+              <span><strong>Fecha:</strong> {{ boleta.fecha | date:'dd/MM/yyyy' }}</span>
+            </div>
+            <div class="boleta-footer">
+              <span class="boleta-total">S/ {{ boleta.total | number:'1.2-2' }}</span>
+              <button class="btn-secondary btn-sm" (click)="verBoleta(boleta)">Ver Boleta</button>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+  <div class="col-right">
+    <div class="card alertas-card">
+      <h2 class="section-title">Alertas de Stock</h2>
+      @if (productosAgotados().length === 0) {
+        <p class="text-muted">Sin alertas de stock.</p>
+      } @else {
+        @for (p of productosAgotados(); track p.id) {
+          <div class="alerta-item">
+            <span class="alerta-nombre">{{ p.nombre }}</span>
+            <div class="alerta-right">
+              <span class="text-danger">¡Quedan 0!</span>
+              <span class="badge badge-danger">Agotado</span>
+            </div>
+          </div>
+        }
+      }
+    </div>
+
+    <div class="card inventario-rapido">
+      <h2 class="section-title">Inventario Rápido</h2>
+      <div class="productos-grid">
+        @for (p of productosConStock(); track p.id) {
+          <div class="producto-card">
+            <div class="producto-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7H4a1 1 0 00-1 1v10a1 1 0 001 1h16a1 1 0 001-1V8a1 1 0 00-1-1zM16 3H8l-1 4h10l-1-4z"/></svg>
+            </div>
+            <p class="producto-nombre">{{ p.nombre }}</p>
+            <p class="producto-precio">S/ {{ p.precio | number:'1.2-2' }}</p>
+            <p class="producto-stock">Stock: <strong>{{ p.stock }}</strong></p>
+            <button class="btn-primary btn-sm" (click)="anadirStock(p)">+ Añadir stock</button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="dashboard-footer">
+  <button class="btn-secondary" routerLink="/inventario">Ver Inventario Completo</button>
+  <button class="btn-secondary" (click)="resumenCaja()">Resumen de Caja Diario</button>
+</footer>
+
+@if (boletaSeleccionada()) {
+  <div class="modal-overlay" (click)="cerrarModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Boleta #{{ boletaSeleccionada()!.id.toString().padStart(3, '0') }}</h3>
+        <button class="close-btn" (click)="cerrarModal()">✕</button>
+      </div>
+      <p><strong>Cliente:</strong> {{ boletaSeleccionada()!.clienteNombre }}</p>
+      <p><strong>DNI:</strong> {{ boletaSeleccionada()!.clienteDni }}</p>
+      <p><strong>Fecha:</strong> {{ boletaSeleccionada()!.fecha | date:'dd/MM/yyyy HH:mm' }}</p>
+      <table class="detalle-table">
+        <thead><tr><th>Producto</th><th>Cant.</th><th>P. Unit.</th><th>Subtotal</th></tr></thead>
+        <tbody>
+          @for (d of boletaSeleccionada()!.detalles; track d.productoId) {
+            <tr>
+              <td>{{ d.productoNombre }}</td>
+              <td>{{ d.cantidad }}</td>
+              <td>S/ {{ d.precioUnitario | number:'1.2-2' }}</td>
+              <td>S/ {{ d.subtotal | number:'1.2-2' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <div class="modal-total">Total: <strong>S/ {{ boletaSeleccionada()!.total | number:'1.2-2' }}</strong></div>
+    </div>
+  </div>
+}

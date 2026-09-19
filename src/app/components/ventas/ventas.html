@@ -1,0 +1,79 @@
+<div class="ventas-layout">
+  <div class="ventas-form card">
+    <h2 class="section-title">Nueva Venta</h2>
+
+    <div class="form-group">
+      <label>Nombre del cliente</label>
+      <input type="text" placeholder="Ej. Juan Pérez" [(ngModel)]="clienteNombre" />
+    </div>
+    <div class="form-group">
+      <label>DNI del cliente</label>
+      <input type="text" placeholder="Ej. 12345678" maxlength="8" [(ngModel)]="clienteDni" />
+    </div>
+
+    <div class="form-group">
+      <label>Buscar producto</label>
+      <input type="text" placeholder="Nombre del producto..." [(ngModel)]="busqueda" />
+    </div>
+
+    <div class="productos-lista">
+      @for (p of productosFiltrados; track p.id) {
+        <div class="producto-item" [class.agotado]="p.stock === 0" (click)="agregarProducto(p)">
+          <div class="producto-info">
+            <span class="pnombre">{{ p.nombre }}</span>
+            <span class="pprecio">S/ {{ p.precio | number:'1.2-2' }}</span>
+          </div>
+          <span class="pstock" [class.sin-stock]="p.stock === 0">
+            {{ p.stock === 0 ? 'Agotado' : 'Stock: ' + p.stock }}
+          </span>
+        </div>
+      }
+      @if (productosFiltrados.length === 0 && busqueda.length > 0) {
+        <p class="text-muted">Sin resultados para "{{ busqueda }}"</p>
+      }
+    </div>
+  </div>
+
+  <div class="boleta-lateral card">
+    <h2 class="section-title">Boleta</h2>
+
+    @if (detalles().length === 0) {
+      <p class="text-muted">Agrega productos desde el panel izquierdo.</p>
+    } @else {
+      <div class="detalle-lista">
+        @for (d of detalles(); track d.productoId) {
+          <div class="detalle-row">
+            <div class="detalle-info">
+              <span class="dnombre">{{ d.productoNombre }}</span>
+              <span class="dprecio">S/ {{ d.precioUnitario | number:'1.2-2' }}</span>
+            </div>
+            <div class="detalle-controles">
+              <button class="qty-btn" (click)="decrementar(d.productoId)">−</button>
+              <span class="qty">{{ d.cantidad }}</span>
+              <button class="qty-btn" (click)="incrementar(d.productoId)" [disabled]="sinStockSuficiente(d.productoId, d.cantidad)">+</button>
+              <button class="remove-btn" (click)="eliminarDetalle(d.productoId)">✕</button>
+            </div>
+            <span class="dsubtotal">S/ {{ d.subtotal | number:'1.2-2' }}</span>
+          </div>
+        }
+      </div>
+
+      <div class="boleta-total">
+        <span>Total</span>
+        <strong>S/ {{ total() | number:'1.2-2' }}</strong>
+      </div>
+    }
+
+    <button
+      class="btn-primary confirmar-btn"
+      [disabled]="!puedeConfirmar || confirmando()"
+      (click)="confirmarVenta()"
+    >
+      {{ confirmando() ? 'Procesando...' : 'Confirmar Venta' }}
+    </button>
+
+    @if (errorMsg()) {
+      <p class="error-msg">{{ errorMsg() }}</p>
+    }
+  </div>
+</div>

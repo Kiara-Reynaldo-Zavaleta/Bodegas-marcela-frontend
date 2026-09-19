@@ -1,0 +1,93 @@
+<div class="inventario-container">
+  <div class="inv-header">
+    <h2>Inventario de Productos</h2>
+    <button class="btn-primary" (click)="abrirFormulario()">+ Añadir Nuevo Producto</button>
+  </div>
+
+  <div class="card table-card">
+    <input type="text" class="buscador" placeholder="Buscar producto..." [(ngModel)]="busqueda" />
+
+    @if (loading()) {
+      <p class="text-muted">Cargando inventario...</p>
+    } @else {
+      <table class="tabla-inventario">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of productosFiltrados; track p.id) {
+            <tr>
+              <td class="id-col">{{ p.id }}</td>
+              <td class="nombre-col">{{ p.nombre }}</td>
+              <td>S/ {{ p.precio | number:'1.2-2' }}</td>
+              <td>
+                <span [class.stock-bajo]="p.stock <= 5">{{ p.stock }}</span>
+              </td>
+              <td>
+                @if (p.stock === 0) {
+                  <span class="badge badge-danger">Agotado</span>
+                } @else if (p.stock <= 5) {
+                  <span class="badge badge-warning">Stock bajo</span>
+                } @else {
+                  <span class="badge badge-success">Disponible</span>
+                }
+              </td>
+              <td>
+                <button class="btn-primary btn-sm" (click)="anadirStock(p)">+ Stock</button>
+              </td>
+            </tr>
+          }
+          @if (productosFiltrados.length === 0) {
+            <tr>
+              <td colspan="6" class="text-muted text-center">Sin productos encontrados.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>
+
+@if (mostrarFormulario()) {
+  <div class="modal-overlay" (click)="cerrarFormulario()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Nuevo Producto</h3>
+        <button class="close-btn" (click)="cerrarFormulario()">✕</button>
+      </div>
+
+      <form (ngSubmit)="guardarProducto()" #form="ngForm">
+        <div class="form-group">
+          <label>Nombre</label>
+          <input type="text" [(ngModel)]="nuevoNombre" name="nombre" required placeholder="Ej. Fideos Don Vittorio" />
+        </div>
+        <div class="form-group">
+          <label>Precio (S/)</label>
+          <input type="number" [(ngModel)]="nuevoPrecio" name="precio" required min="0.01" step="0.01" placeholder="0.00" />
+        </div>
+        <div class="form-group">
+          <label>Stock inicial</label>
+          <input type="number" [(ngModel)]="nuevoStock" name="stock" required min="0" placeholder="0" />
+        </div>
+
+        @if (errorForm()) {
+          <p class="error-msg">{{ errorForm() }}</p>
+        }
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="cerrarFormulario()">Cancelar</button>
+          <button type="submit" class="btn-primary" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando...' : 'Guardar Producto' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
