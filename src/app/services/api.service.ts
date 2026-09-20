@@ -58,4 +58,12 @@ export class ApiService {
   deleteBoleta(id: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/boletas/${id}`);
   }
+
+  getBoletasFiado(): Observable<Boleta[]> {
+    return this.http.get<Boleta[]>(`${this.base}/boletas/fiado`);
+  }
+
+  marcarPagado(id: number): Observable<Boleta> {
+    return this.http.put<Boleta>(`${this.base}/boletas/${id}/pagar`, {});
+  }
 }

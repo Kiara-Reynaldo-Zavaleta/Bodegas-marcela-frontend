@@ -1,0 +1,56 @@
+<div class="cobrar-container">
+  <div class="cobrar-header">
+    <h1>Cuentas por Cobrar</h1>
+    <p>Ventas marcadas como fiado pendientes de pago</p>
+  </div>
+
+  @if (loading()) {
+    <div class="card"><p class="text-muted">Cargando...</p></div>
+  } @else if (boletas().length === 0) {
+    <div class="card empty-state">
+      <p>No hay cuentas pendientes de cobro.</p>
+    </div>
+  } @else {
+    <div class="resumen-bar">
+      <span>{{ boletas().length }} cuenta(s) pendiente(s)</span>
+      <strong>Total pendiente: S/ {{ totalPendiente() | number:'1.2-2' }}</strong>
+    </div>
+
+    <div class="card tabla-card">
+      <table class="cobrar-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Cliente</th>
+            <th>DNI</th>
+            <th>Fecha</th>
+            <th>Forma de pago</th>
+            <th>Total</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (boleta of boletas(); track boleta.id) {
+            <tr>
+              <td class="col-id">{{ boleta.id.toString().padStart(3, '0') }}</td>
+              <td>{{ boleta.clienteNombre }}</td>
+              <td>{{ boleta.clienteDni || '-' }}</td>
+              <td>{{ boleta.fecha | date:'dd/MM/yyyy' }}</td>
+              <td>{{ boleta.formaPago }}</td>
+              <td class="col-total">S/ {{ boleta.total | number:'1.2-2' }}</td>
+              <td class="col-accion">
+                <button
+                  class="btn-primary btn-sm"
+                  [disabled]="procesando() === boleta.id"
+                  (click)="marcarPagado(boleta)"
+                >
+                  {{ procesando() === boleta.id ? 'Procesando...' : 'Marcar pagado' }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

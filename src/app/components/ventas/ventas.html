@@ -30,6 +30,35 @@
       />
     </div>
 
+    <div class="pago-section">
+      <div class="form-group">
+        <label>Forma de pago</label>
+        <div class="pago-opciones">
+          <label class="radio-opcion" [class.activo]="formaPago === 'EFECTIVO'">
+            <input type="radio" name="formaPago" value="EFECTIVO" [(ngModel)]="formaPago" />
+            Efectivo
+          </label>
+          <label class="radio-opcion" [class.activo]="formaPago === 'YAPE'">
+            <input type="radio" name="formaPago" value="YAPE" [(ngModel)]="formaPago" />
+            Yape
+          </label>
+          <label class="radio-opcion" [class.activo]="formaPago === 'PLIN'">
+            <input type="radio" name="formaPago" value="PLIN" [(ngModel)]="formaPago" />
+            Plin
+          </label>
+        </div>
+      </div>
+      <div class="form-group fiado-group">
+        <label class="fiado-label">
+          <input type="checkbox" [(ngModel)]="esFiado" />
+          <span>Fiado (pago pendiente)</span>
+        </label>
+        @if (esFiado) {
+          <span class="fiado-alerta">Esta venta quedará como deuda pendiente de cobro.</span>
+        }
+      </div>
+    </div>
+
     <div class="form-group">
       <label>Buscar producto</label>
       <input type="text" placeholder="Nombre del producto..." [(ngModel)]="busqueda" />

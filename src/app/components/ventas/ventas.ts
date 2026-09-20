@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { ModalService } from '../../services/modal.service';
 import { Producto } from '../../models/producto.model';
-import { DetalleBoleta } from '../../models/boleta.model';
+import { DetalleBoleta, FormaPago } from '../../models/boleta.model';
 
 @Component({
   selector: 'app-ventas',
@@ -21,6 +21,8 @@ export class Ventas implements OnInit {
   clienteNombre = '';
   clienteDni = '';
   busqueda = '';
+  formaPago: FormaPago = 'EFECTIVO';
+  esFiado = false;
 
   productos           = signal<Producto[]>([]);
   detalles            = signal<DetalleBoleta[]>([]);
@@ -150,6 +152,8 @@ export class Ventas implements OnInit {
     this.api.createBoleta({
       clienteNombre: this.clienteNombre.trim() || 'Cliente varios',
       clienteDni: this.clienteDni.trim() || '',
+      formaPago: this.formaPago,
+      estadoPago: this.esFiado ? 'FIADO' : 'PAGADO',
       items: this.detalles().map(d => ({ productoId: d.productoId, cantidad: d.cantidad }))
     }).subscribe({
       next: (boleta) => {
@@ -158,6 +162,8 @@ export class Ventas implements OnInit {
         this.clienteNombre = '';
         this.clienteDni = '';
         this.busqueda = '';
+        this.formaPago = 'EFECTIVO';
+        this.esFiado = false;
         this.nombreAutocompletado.set(false);
         this.ultimoDniBuscado = '';
 

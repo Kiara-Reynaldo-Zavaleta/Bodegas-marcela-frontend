@@ -27,7 +27,7 @@ export class Dashboard implements OnInit {
   ngOnInit() {
     this.api.getBoletas().subscribe({
       next: data => {
-        this.boletas.set(data.slice(-5).reverse());
+        this.boletas.set(data);
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
@@ -35,6 +35,10 @@ export class Dashboard implements OnInit {
     this.api.getProductos().subscribe({
       next: data => this.productos.set(data)
     });
+  }
+
+  get boletasRecientes(): Boleta[] {
+    return [...this.boletas()].slice(-5).reverse();
   }
 
   badgeClass(estado: string): string {
@@ -100,19 +104,31 @@ export class Dashboard implements OnInit {
 
   async resumenCaja() {
     const hoy = new Date().toLocaleDateString('es-PE');
-    const boletasHoy = this.boletas().filter(b => {
-      const fecha = new Date(b.fecha).toLocaleDateString('es-PE');
-      return fecha === hoy;
-    });
-    const total = boletasHoy.reduce((acc, b) => acc + b.total, 0);
+    const boletasHoy = this.boletas().filter(b =>
+      new Date(b.fecha).toLocaleDateString('es-PE') === hoy
+    );
+
+    const pagadas = boletasHoy.filter(b => b.estadoPago === 'PAGADO');
+    const fiadas  = boletasHoy.filter(b => b.estadoPago === 'FIADO');
+
+    const suma = (lista: Boleta[]) => lista.reduce((acc, b) => acc + b.total, 0);
+    const totalEfectivo = suma(pagadas.filter(b => b.formaPago === 'EFECTIVO'));
+    const totalYape     = suma(pagadas.filter(b => b.formaPago === 'YAPE'));
+    const totalPlin     = suma(pagadas.filter(b => b.formaPago === 'PLIN'));
+    const totalFiado    = suma(fiadas);
+    const totalCaja     = totalEfectivo + totalYape + totalPlin;
 
     await this.modal.open({
       type: 'info',
       title: 'Resumen de Caja Diario',
       rows: [
-        { label: 'Fecha', value: hoy },
-        { label: 'Boletas emitidas', value: String(boletasHoy.length) },
-        { label: 'Total recaudado', value: `S/ ${total.toFixed(2)}` }
+        { label: 'Fecha',              value: hoy },
+        { label: 'Boletas emitidas',   value: String(boletasHoy.length) },
+        { label: 'Efectivo',           value: `S/ ${totalEfectivo.toFixed(2)}` },
+        { label: 'Yape',               value: `S/ ${totalYape.toFixed(2)}` },
+        { label: 'Plin',               value: `S/ ${totalPlin.toFixed(2)}` },
+        { label: 'Total en caja',      value: `S/ ${totalCaja.toFixed(2)}` },
+        { label: 'Pendiente (fiado)',  value: `S/ ${totalFiado.toFixed(2)}` },
       ],
       confirmLabel: 'Cerrar'
     });

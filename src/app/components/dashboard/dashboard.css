@@ -62,6 +62,12 @@
   margin-bottom: 10px;
 }
 
+.boleta-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .boleta-id {
   font-weight: 700;
   font-size: 15px;
