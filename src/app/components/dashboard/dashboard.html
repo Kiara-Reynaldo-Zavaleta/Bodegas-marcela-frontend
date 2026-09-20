@@ -11,10 +11,10 @@
 
       @if (loading()) {
         <p class="text-muted">Cargando...</p>
-      } @else if (boletasRecientes.length === 0) {
+      } @else if (boletasRecientes().length === 0) {
         <p class="text-muted">No hay ventas registradas aún.</p>
       } @else {
-        @for (boleta of boletasRecientes; track boleta.id) {
+        @for (boleta of boletasRecientes(); track boleta.id) {
           <div class="boleta-card">
             <div class="boleta-header">
               <span class="boleta-id">Boleta #{{ boleta.id.toString().padStart(3, '0') }}</span>
@@ -30,7 +30,9 @@
               <span><strong>DNI:</strong> {{ boleta.clienteDni }}</span>
               <span><strong>Items:</strong> {{ boleta.detalles.length }}</span>
               <span><strong>Fecha:</strong> {{ boleta.fecha | date:'dd/MM/yyyy' }}</span>
-              <span><strong>Pago:</strong> {{ boleta.formaPago }}</span>
+              @if (boleta.formaPago) {
+                <span><strong>Pago:</strong> {{ boleta.formaPago }}</span>
+              }
             </div>
             <div class="boleta-footer">
               <span class="boleta-total">S/ {{ boleta.total | number:'1.2-2' }}</span>

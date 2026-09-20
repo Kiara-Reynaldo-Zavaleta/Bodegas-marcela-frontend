@@ -37,9 +37,9 @@ export class Dashboard implements OnInit {
     });
   }
 
-  get boletasRecientes(): Boleta[] {
-    return [...this.boletas()].slice(-5).reverse();
-  }
+  boletasRecientes = computed(() =>
+    [...this.boletas()].sort((a, b) => b.id - a.id).slice(0, 5)
+  );
 
   badgeClass(estado: string): string {
     const map: Record<string, string> = {

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { Producto, ProductoForm } from '../models/producto.model';
 import { Boleta, BoletaRequest } from '../models/boleta.model';
 import { VentaPorDia, ProductoMasVendido, VentaPorHora } from '../models/reporte.model';
@@ -24,11 +24,15 @@ export class ApiService {
   }
 
   getBoletas(): Observable<Boleta[]> {
-    return this.http.get<Boleta[]>(`${this.base}/boletas`);
+    return this.http.get<any[]>(`${this.base}/boletas`).pipe(
+      map(data => data.map(b => this.normalizarBoleta(b)))
+    );
   }
 
   createBoleta(data: BoletaRequest): Observable<Boleta> {
-    return this.http.post<Boleta>(`${this.base}/boletas`, data);
+    return this.http.post<any>(`${this.base}/boletas`, data).pipe(
+      map(b => this.normalizarBoleta(b))
+    );
   }
 
   updateProducto(id: number, data: ProductoForm): Observable<Producto> {
@@ -52,7 +56,9 @@ export class ApiService {
   }
 
   getBoletasByDni(dni: string): Observable<Boleta[]> {
-    return this.http.get<Boleta[]>(`${this.base}/boletas/cliente/${dni}`);
+    return this.http.get<any[]>(`${this.base}/boletas/cliente/${dni}`).pipe(
+      map(data => data.map(b => this.normalizarBoleta(b)))
+    );
   }
 
   deleteBoleta(id: number): Observable<void> {
@@ -60,10 +66,22 @@ export class ApiService {
   }
 
   getBoletasFiado(): Observable<Boleta[]> {
-    return this.http.get<Boleta[]>(`${this.base}/boletas/fiado`);
+    return this.http.get<any[]>(`${this.base}/boletas/fiado`).pipe(
+      map(data => data.map(b => this.normalizarBoleta(b)))
+    );
   }
 
   marcarPagado(id: number): Observable<Boleta> {
-    return this.http.put<Boleta>(`${this.base}/boletas/${id}/pagar`, {});
+    return this.http.put<any>(`${this.base}/boletas/${id}/pagar`, {}).pipe(
+      map(b => this.normalizarBoleta(b))
+    );
+  }
+
+  private normalizarBoleta(b: any): Boleta {
+    return {
+      ...b,
+      formaPago:  b.formaPago  ?? b.forma_pago  ?? undefined,
+      estadoPago: b.estadoPago ?? b.estado_pago ?? undefined,
+    };
   }
 }
