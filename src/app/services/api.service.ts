@@ -3,11 +3,12 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Producto, ProductoForm } from '../models/producto.model';
 import { Boleta, BoletaRequest } from '../models/boleta.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private http = inject(HttpClient);
-  private base = 'http://localhost:8080/api';
+  private base = environment.apiUrl;
 
   getProductos(): Observable<Producto[]> {
     return this.http.get<Producto[]>(`${this.base}/productos`);
