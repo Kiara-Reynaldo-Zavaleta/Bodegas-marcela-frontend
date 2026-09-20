@@ -22,10 +22,10 @@ Chart.register(
   Title, Tooltip, Legend, Filler
 );
 
-const ORDEN_DIAS = ['LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO','DOMINGO'];
+const ORDEN_DIAS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
 const ETIQUETAS_DIAS: Record<string, string> = {
-  LUNES: 'Lun', MARTES: 'Mar', MIERCOLES: 'Mié',
-  JUEVES: 'Jue', VIERNES: 'Vie', SABADO: 'Sáb', DOMINGO: 'Dom'
+  'Lunes': 'Lun', 'Martes': 'Mar', 'Miércoles': 'Mié',
+  'Jueves': 'Jue', 'Viernes': 'Vie', 'Sábado': 'Sáb', 'Domingo': 'Dom'
 };
 
 @Component({
@@ -126,7 +126,7 @@ export class Reportes implements OnInit, AfterViewInit, OnDestroy {
         labels: this.datosDia().map(d => ETIQUETAS_DIAS[d.dia] ?? d.dia),
         datasets: [{
           label: 'Total (S/)',
-          data: this.datosDia().map(d => d.total),
+          data: this.datosDia().map(d => d.totalRecaudado),
           backgroundColor: '#FBBF24',
           hoverBackgroundColor: '#F59E0B',
           borderRadius: 7,
@@ -208,7 +208,7 @@ export class Reportes implements OnInit, AfterViewInit, OnDestroy {
         }),
         datasets: [{
           label: 'Ventas (S/)',
-          data: this.datosHoras().map(h => h.totalVentas),
+          data: this.datosHoras().map(h => h.totalRecaudado),
           borderColor: '#1D4ED8',
           backgroundColor: 'rgba(29,78,216,0.08)',
           fill: true,

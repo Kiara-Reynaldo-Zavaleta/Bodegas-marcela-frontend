@@ -1,6 +1,7 @@
 export interface VentaPorDia {
   dia: string;
-  total: number;
+  cantidadBoletas: number;
+  totalRecaudado: number;
 }
 
 export interface ProductoMasVendido {
@@ -10,5 +11,6 @@ export interface ProductoMasVendido {
 
 export interface VentaPorHora {
   hora: number;
-  totalVentas: number;
+  cantidadVentas: number;
+  totalRecaudado: number;
 }

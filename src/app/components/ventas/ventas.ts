@@ -22,10 +22,14 @@ export class Ventas implements OnInit {
   clienteDni = '';
   busqueda = '';
 
-  productos = signal<Producto[]>([]);
-  detalles = signal<DetalleBoleta[]>([]);
-  confirmando = signal(false);
-  errorMsg = signal('');
+  productos           = signal<Producto[]>([]);
+  detalles            = signal<DetalleBoleta[]>([]);
+  confirmando         = signal(false);
+  errorMsg            = signal('');
+  buscandoCliente     = signal(false);
+  nombreAutocompletado = signal(false);
+
+  private ultimoDniBuscado = '';
 
   total = computed(() =>
     this.detalles().reduce((acc, d) => acc + d.subtotal, 0)
@@ -47,6 +51,40 @@ export class Ventas implements OnInit {
 
   ngOnInit() {
     this.api.getProductos().subscribe({ next: data => this.productos.set(data) });
+  }
+
+  onDniChange(value: string) {
+    this.clienteDni = value;
+    if (value.length < 8 && this.nombreAutocompletado()) {
+      this.clienteNombre = '';
+      this.nombreAutocompletado.set(false);
+      this.ultimoDniBuscado = '';
+    }
+    if (value.length === 8 && value !== this.ultimoDniBuscado) {
+      this.ultimoDniBuscado = value;
+      this.buscarNombreCliente(value);
+    }
+  }
+
+  onNombreChange(value: string) {
+    this.clienteNombre = value;
+    if (this.nombreAutocompletado()) {
+      this.nombreAutocompletado.set(false);
+    }
+  }
+
+  private buscarNombreCliente(dni: string) {
+    this.buscandoCliente.set(true);
+    this.api.getBoletasByDni(dni).subscribe({
+      next: boletas => {
+        this.buscandoCliente.set(false);
+        if (!boletas.length) return;
+        const masReciente = boletas.reduce((max, b) => b.id > max.id ? b : max);
+        this.clienteNombre = masReciente.clienteNombre;
+        this.nombreAutocompletado.set(true);
+      },
+      error: () => this.buscandoCliente.set(false)
+    });
   }
 
   agregarProducto(producto: Producto) {
@@ -124,6 +162,8 @@ export class Ventas implements OnInit {
         this.clienteNombre = '';
         this.clienteDni = '';
         this.busqueda = '';
+        this.nombreAutocompletado.set(false);
+        this.ultimoDniBuscado = '';
 
         this.modal.open({
           type: 'success',
