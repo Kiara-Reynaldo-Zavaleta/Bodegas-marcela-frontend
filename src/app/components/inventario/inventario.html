@@ -40,7 +40,11 @@
                 }
               </td>
               <td>
-                <button class="btn-primary btn-sm" (click)="anadirStock(p)">+ Stock</button>
+                <div class="acciones">
+                  <button class="btn-primary btn-sm" (click)="anadirStock(p)">+ Stock</button>
+                  <button class="btn-secondary btn-sm" (click)="abrirEdicion(p)">Editar</button>
+                  <button class="btn-danger btn-sm" (click)="eliminarProducto(p)">Eliminar</button>
+                </div>
               </td>
             </tr>
           }
@@ -62,8 +66,7 @@
         <h3>Nuevo Producto</h3>
         <button class="close-btn" (click)="cerrarFormulario()">✕</button>
       </div>
-
-      <form (ngSubmit)="guardarProducto()" #form="ngForm">
+      <form (ngSubmit)="guardarProducto()" #formNuevo="ngForm">
         <div class="form-group">
           <label>Nombre</label>
           <input type="text" [(ngModel)]="nuevoNombre" name="nombre" required placeholder="Ej. Fideos Don Vittorio" />
@@ -76,15 +79,47 @@
           <label>Stock inicial</label>
           <input type="number" [(ngModel)]="nuevoStock" name="stock" required min="0" placeholder="0" />
         </div>
-
         @if (errorForm()) {
           <p class="error-msg">{{ errorForm() }}</p>
         }
-
         <div class="form-actions">
           <button type="button" class="btn-secondary" (click)="cerrarFormulario()">Cancelar</button>
           <button type="submit" class="btn-primary" [disabled]="guardando()">
             {{ guardando() ? 'Guardando...' : 'Guardar Producto' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (productoEditando()) {
+  <div class="modal-overlay" (click)="cerrarEdicion()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Editar Producto</h3>
+        <button class="close-btn" (click)="cerrarEdicion()">✕</button>
+      </div>
+      <form (ngSubmit)="guardarEdicion()" #formEdicion="ngForm">
+        <div class="form-group">
+          <label>Nombre</label>
+          <input type="text" [(ngModel)]="editNombre" name="editNombre" required placeholder="Nombre del producto" />
+        </div>
+        <div class="form-group">
+          <label>Precio (S/)</label>
+          <input type="number" [(ngModel)]="editPrecio" name="editPrecio" required min="0.01" step="0.01" placeholder="0.00" />
+        </div>
+        <div class="form-group">
+          <label>Stock</label>
+          <input type="number" [(ngModel)]="editStock" name="editStock" required min="0" placeholder="0" />
+        </div>
+        @if (errorEdicion()) {
+          <p class="error-msg">{{ errorEdicion() }}</p>
+        }
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="cerrarEdicion()">Cancelar</button>
+          <button type="submit" class="btn-primary" [disabled]="guardandoEdicion()">
+            {{ guardandoEdicion() ? 'Guardando...' : 'Guardar Cambios' }}
           </button>
         </div>
       </form>

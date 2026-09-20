@@ -18,13 +18,20 @@ export class Inventario implements OnInit {
   productos = signal<Producto[]>([]);
   loading = signal(true);
   busqueda = '';
+
   mostrarFormulario = signal(false);
   guardando = signal(false);
   errorForm = signal('');
-
   nuevoNombre = '';
   nuevoPrecio: number | null = null;
   nuevoStock: number | null = null;
+
+  productoEditando = signal<Producto | null>(null);
+  guardandoEdicion = signal(false);
+  errorEdicion = signal('');
+  editNombre = '';
+  editPrecio: number | null = null;
+  editStock: number | null = null;
 
   get productosFiltrados(): Producto[] {
     const q = this.busqueda.toLowerCase().trim();
@@ -33,10 +40,6 @@ export class Inventario implements OnInit {
   }
 
   ngOnInit() {
-    this.cargarProductos();
-  }
-
-  cargarProductos() {
     this.api.getProductos().subscribe({
       next: data => {
         this.productos.set(data);
@@ -83,6 +86,67 @@ export class Inventario implements OnInit {
       error: () => {
         this.guardando.set(false);
         this.errorForm.set('Error al guardar el producto. Intente nuevamente.');
+      }
+    });
+  }
+
+  abrirEdicion(producto: Producto) {
+    this.editNombre = producto.nombre;
+    this.editPrecio = producto.precio;
+    this.editStock = producto.stock;
+    this.errorEdicion.set('');
+    this.productoEditando.set(producto);
+  }
+
+  cerrarEdicion() {
+    this.productoEditando.set(null);
+  }
+
+  guardarEdicion() {
+    if (!this.editNombre.trim() || !this.editPrecio || this.editStock === null) {
+      this.errorEdicion.set('Completa todos los campos.');
+      return;
+    }
+    if (this.editPrecio <= 0) {
+      this.errorEdicion.set('El precio debe ser mayor a 0.');
+      return;
+    }
+    const id = this.productoEditando()!.id;
+    this.guardandoEdicion.set(true);
+    this.errorEdicion.set('');
+
+    this.api.updateProducto(id, {
+      nombre: this.editNombre.trim(),
+      precio: this.editPrecio,
+      stock: this.editStock
+    }).subscribe({
+      next: actualizado => {
+        this.productos.update(list => list.map(p => p.id === id ? actualizado : p));
+        this.guardandoEdicion.set(false);
+        this.cerrarEdicion();
+      },
+      error: () => {
+        this.guardandoEdicion.set(false);
+        this.errorEdicion.set('Error al guardar los cambios. Intente nuevamente.');
+      }
+    });
+  }
+
+  async eliminarProducto(producto: Producto) {
+    const resultado = await this.modal.open({
+      type: 'confirm',
+      title: '¿Eliminar producto?',
+      message: `"${producto.nombre}" se eliminará de forma permanente.`,
+      confirmLabel: 'Eliminar',
+      cancelLabel: 'Cancelar',
+      confirmDanger: true
+    });
+
+    if (!resultado) return;
+
+    this.api.deleteProducto(producto.id).subscribe({
+      next: () => {
+        this.productos.update(list => list.filter(p => p.id !== producto.id));
       }
     });
   }

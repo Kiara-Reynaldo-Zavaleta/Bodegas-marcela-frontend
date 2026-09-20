@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 
-export type ModalType = 'success' | 'info' | 'error' | 'prompt';
+export type ModalType = 'success' | 'info' | 'error' | 'confirm' | 'prompt';
 
 export interface ModalRow {
   label: string;
@@ -12,6 +12,7 @@ export interface ModalConfig {
   title: string;
   message?: string;
   rows?: ModalRow[];
+  confirmDanger?: boolean;
   inputLabel?: string;
   inputPlaceholder?: string;
   inputMin?: number;

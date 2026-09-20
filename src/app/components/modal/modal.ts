@@ -18,15 +18,19 @@ export class Modal {
     return this.modal.config();
   }
 
+  private get hasCancelOnEscape(): boolean {
+    return this.config?.type === 'prompt' || this.config?.type === 'confirm';
+  }
+
   @HostListener('document:keydown.escape')
   onEscape() {
     if (!this.config) return;
-    this.config.type === 'prompt' ? this.cancelModal() : this.confirmModal();
+    this.hasCancelOnEscape ? this.cancelModal() : this.confirmModal();
   }
 
   clickOverlay(event: MouseEvent) {
     if ((event.target as HTMLElement).classList.contains('modal-overlay')) {
-      this.config?.type === 'prompt' ? this.cancelModal() : this.confirmModal();
+      this.hasCancelOnEscape ? this.cancelModal() : this.confirmModal();
     }
   }
 
@@ -42,6 +46,8 @@ export class Modal {
   }
 
   get confirmClass(): string {
-    return this.config?.type === 'info' ? 'btn-secondary' : 'btn-primary';
+    if (this.config?.type === 'info') return 'btn-secondary';
+    if (this.config?.confirmDanger) return 'btn-danger';
+    return 'btn-primary';
   }
 }

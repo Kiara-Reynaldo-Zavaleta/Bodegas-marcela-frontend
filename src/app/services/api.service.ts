@@ -29,4 +29,12 @@ export class ApiService {
   createBoleta(data: BoletaRequest): Observable<Boleta> {
     return this.http.post<Boleta>(`${this.base}/boletas`, data);
   }
+
+  updateProducto(id: number, data: ProductoForm): Observable<Producto> {
+    return this.http.put<Producto>(`${this.base}/productos/${id}`, data);
+  }
+
+  deleteProducto(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/productos/${id}`);
+  }
 }
