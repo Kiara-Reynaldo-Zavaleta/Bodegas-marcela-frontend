@@ -78,6 +78,26 @@ export class Dashboard implements OnInit {
     });
   }
 
+  async eliminarBoleta(boleta: Boleta) {
+    const resultado = await this.modal.open({
+      type: 'confirm',
+      title: '¿Eliminar boleta?',
+      rows: [
+        { label: 'Cliente', value: boleta.clienteNombre },
+        { label: 'Total',   value: `S/ ${boleta.total.toFixed(2)}` }
+      ],
+      confirmLabel: 'Eliminar',
+      cancelLabel: 'Cancelar',
+      confirmDanger: true
+    });
+
+    if (!resultado) return;
+
+    this.api.deleteBoleta(boleta.id).subscribe({
+      next: () => this.boletas.update(list => list.filter(b => b.id !== boleta.id))
+    });
+  }
+
   async resumenCaja() {
     const hoy = new Date().toLocaleDateString('es-PE');
     const boletasHoy = this.boletas().filter(b => {

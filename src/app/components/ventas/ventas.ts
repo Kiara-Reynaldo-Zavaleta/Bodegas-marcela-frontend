@@ -42,11 +42,7 @@ export class Ventas implements OnInit {
   }
 
   get puedeConfirmar(): boolean {
-    return (
-      this.clienteNombre.trim().length > 0 &&
-      this.clienteDni.trim().length === 8 &&
-      this.detalles().length > 0
-    );
+    return this.detalles().length > 0;
   }
 
   ngOnInit() {
@@ -152,8 +148,8 @@ export class Ventas implements OnInit {
     this.errorMsg.set('');
 
     this.api.createBoleta({
-      clienteNombre: this.clienteNombre.trim(),
-      clienteDni: this.clienteDni.trim(),
+      clienteNombre: this.clienteNombre.trim() || 'Cliente varios',
+      clienteDni: this.clienteDni.trim() || '',
       items: this.detalles().map(d => ({ productoId: d.productoId, cantidad: d.cantidad }))
     }).subscribe({
       next: (boleta) => {

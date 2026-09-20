@@ -41,6 +41,12 @@
   font-style: italic;
 }
 
+.label-opcional {
+  font-weight: 400;
+  color: #9CA3AF;
+  font-size: 11px;
+}
+
 .autocomplete-hint {
   display: block;
   margin-top: 5px;

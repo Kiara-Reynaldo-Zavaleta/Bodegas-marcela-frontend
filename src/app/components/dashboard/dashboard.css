@@ -94,6 +94,32 @@
   font-size: 13px;
 }
 
+.boleta-acciones {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-icon-danger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #FECACA;
+  background: #FFF5F5;
+  color: #DC2626;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.btn-icon-danger:hover {
+  background: #FEE2E2;
+  border-color: #FCA5A5;
+}
+
 .alertas-card {
   border-left: 4px solid #EF4444;
 }

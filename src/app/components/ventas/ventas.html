@@ -3,10 +3,10 @@
     <h2 class="section-title">Nueva Venta</h2>
 
     <div class="form-group">
-      <label>Nombre del cliente</label>
+      <label>Nombre del cliente <span class="label-opcional">(opcional)</span></label>
       <input
         type="text"
-        placeholder="Ej. Juan Pérez"
+        placeholder="Ej. Juan Pérez — vacío usa 'Cliente varios'"
         [ngModel]="clienteNombre"
         (ngModelChange)="onNombreChange($event)"
       />
@@ -16,14 +16,14 @@
     </div>
     <div class="form-group">
       <div class="dni-label-row">
-        <label>DNI del cliente</label>
+        <label>DNI del cliente <span class="label-opcional">(opcional)</span></label>
         @if (buscandoCliente()) {
           <span class="dni-buscando">Buscando cliente...</span>
         }
       </div>
       <input
         type="text"
-        placeholder="Ej. 12345678"
+        placeholder="Ej. 12345678 — opcional"
         maxlength="8"
         [ngModel]="clienteDni"
         (ngModelChange)="onDniChange($event)"

@@ -54,4 +54,8 @@ export class ApiService {
   getBoletasByDni(dni: string): Observable<Boleta[]> {
     return this.http.get<Boleta[]>(`${this.base}/boletas/cliente/${dni}`);
   }
+
+  deleteBoleta(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/boletas/${id}`);
+  }
 }
