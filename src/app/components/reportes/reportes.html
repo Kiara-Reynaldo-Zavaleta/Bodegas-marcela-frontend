@@ -1,0 +1,127 @@
+<div class="reportes-container">
+  <div class="reportes-header">
+    <h1>Reportes y Estadísticas</h1>
+    <p class="subtitulo">Análisis de ventas e historial de clientes</p>
+  </div>
+
+  <div class="charts-grid">
+    <div class="card chart-card">
+      <h2 class="card-title">Recaudado por Día</h2>
+      <p class="card-subtitle">Total de ventas según el día de la semana</p>
+      <div class="chart-wrapper">
+        @if (cargandoDia()) {
+          <div class="chart-skeleton"></div>
+        }
+        <canvas #canvasDia [style.display]="cargandoDia() ? 'none' : 'block'"></canvas>
+        @if (!cargandoDia() && datosDia().length === 0) {
+          <p class="empty-msg">Sin datos disponibles.</p>
+        }
+      </div>
+    </div>
+
+    <div class="card chart-card">
+      <h2 class="card-title">Productos más Vendidos</h2>
+      <p class="card-subtitle">Ranking por unidades vendidas</p>
+      <div class="chart-wrapper">
+        @if (cargandoProductos()) {
+          <div class="chart-skeleton"></div>
+        }
+        <canvas #canvasProductos [style.display]="cargandoProductos() ? 'none' : 'block'"></canvas>
+        @if (!cargandoProductos() && datosProductos().length === 0) {
+          <p class="empty-msg">Sin datos disponibles.</p>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="card chart-card chart-card--full">
+    <h2 class="card-title">Ventas por Hora del Día</h2>
+    <p class="card-subtitle">Distribución horaria del volumen de ventas</p>
+    <div class="chart-wrapper chart-wrapper--tall">
+      @if (cargandoHoras()) {
+        <div class="chart-skeleton"></div>
+      }
+      <canvas #canvasHoras [style.display]="cargandoHoras() ? 'none' : 'block'"></canvas>
+      @if (!cargandoHoras() && datosHoras().length === 0) {
+        <p class="empty-msg">Sin datos disponibles.</p>
+      }
+    </div>
+  </div>
+
+  <div class="card historial-card">
+    <h2 class="card-title">Historial por Cliente</h2>
+    <p class="card-subtitle">Consulta todas las boletas emitidas a un cliente por su DNI</p>
+
+    <div class="dni-search">
+      <input
+        type="text"
+        placeholder="Ingresa el DNI del cliente (8 dígitos)"
+        maxlength="8"
+        [(ngModel)]="dniSearch"
+        (keydown.enter)="buscarCliente()"
+        class="dni-input"
+      />
+      <button class="btn-secondary" (click)="buscarCliente()" [disabled]="cargandoCliente()">
+        {{ cargandoCliente() ? 'Buscando...' : 'Buscar' }}
+      </button>
+    </div>
+
+    @if (errorCliente()) {
+      <p class="error-msg">{{ errorCliente() }}</p>
+    }
+
+    @if (!cargandoCliente() && dniConsultado()) {
+      @if (boletasCliente().length === 0) {
+        <p class="empty-msg">No se encontraron boletas para el DNI {{ dniConsultado() }}.</p>
+      } @else {
+        <div class="historial-resumen">
+          <span>DNI <strong>{{ dniConsultado() }}</strong></span>
+          <span>{{ boletasCliente().length }} boleta{{ boletasCliente().length !== 1 ? 's' : '' }}</span>
+          <span>Total acumulado:
+            <strong>S/ {{ totalCliente() | number:'1.2-2' }}</strong>
+          </span>
+        </div>
+
+        <div class="boletas-lista">
+          @for (b of boletasCliente(); track b.id) {
+            <div class="boleta-row">
+              <div class="boleta-row-header" (click)="toggleBoleta(b.id)">
+                <div class="boleta-row-info">
+                  <span class="boleta-num">Boleta #{{ b.id.toString().padStart(3,'0') }}</span>
+                  <span class="boleta-fecha">{{ b.fecha | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+                <div class="boleta-row-right">
+                  <span class="badge" [class]="b.estado === 'CONFIRMADA' ? 'badge badge-success' : b.estado === 'PENDIENTE' ? 'badge badge-warning' : 'badge badge-danger'">
+                    {{ b.estado }}
+                  </span>
+                  <span class="boleta-total">S/ {{ b.total | number:'1.2-2' }}</span>
+                  <span class="toggle-icon">{{ boletaExpandida() === b.id ? '▲' : '▼' }}</span>
+                </div>
+              </div>
+
+              @if (boletaExpandida() === b.id) {
+                <div class="boleta-detalles">
+                  <table class="detalle-table">
+                    <thead>
+                      <tr><th>Producto</th><th>Cant.</th><th>P. Unit.</th><th>Subtotal</th></tr>
+                    </thead>
+                    <tbody>
+                      @for (d of b.detalles; track d.productoId) {
+                        <tr>
+                          <td>{{ d.productoNombre }}</td>
+                          <td>{{ d.cantidad }}</td>
+                          <td>S/ {{ d.precioUnitario | number:'1.2-2' }}</td>
+                          <td>S/ {{ d.subtotal | number:'1.2-2' }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>
