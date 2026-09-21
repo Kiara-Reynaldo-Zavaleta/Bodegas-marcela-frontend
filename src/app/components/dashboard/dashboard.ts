@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { NgClass, DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { ModalService } from '../../services/modal.service';
 import { Boleta } from '../../models/boleta.model';
@@ -10,7 +10,7 @@ import { Producto } from '../../models/producto.model';
   selector: 'app-dashboard',
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
-  imports: [RouterLink, NgClass, DatePipe, DecimalPipe]
+  imports: [RouterLink, DatePipe, DecimalPipe]
 })
 export class Dashboard implements OnInit {
   private api = inject(ApiService);
@@ -64,15 +64,6 @@ export class Dashboard implements OnInit {
       },
       error: () => this.cargandoCat.set(false)
     });
-  }
-
-  badgeClass(estado: string): string {
-    const map: Record<string, string> = {
-      CONFIRMADA: 'badge badge-success',
-      PENDIENTE: 'badge badge-warning',
-      ANULADA: 'badge badge-danger'
-    };
-    return map[estado] ?? 'badge';
   }
 
   verBoleta(boleta: Boleta) {
@@ -133,13 +124,17 @@ export class Dashboard implements OnInit {
       new Date(b.fecha).toLocaleDateString('es-PE') === hoy
     );
 
-    const pagadas = boletasHoy.filter(b => b.estadoPago === 'PAGADO');
-    const fiadas  = boletasHoy.filter(b => b.estadoPago === 'FIADO');
+    const pagadasHoy = this.boletas().filter(b =>
+      b.estadoPago === 'PAGADO' &&
+      b.fechaPago != null &&
+      new Date(b.fechaPago).toLocaleDateString('es-PE') === hoy
+    );
+    const fiadas = boletasHoy.filter(b => b.estadoPago === 'FIADO');
 
     const suma = (lista: Boleta[]) => lista.reduce((acc, b) => acc + b.total, 0);
-    const totalEfectivo = suma(pagadas.filter(b => b.formaPago === 'EFECTIVO'));
-    const totalYape     = suma(pagadas.filter(b => b.formaPago === 'YAPE'));
-    const totalPlin     = suma(pagadas.filter(b => b.formaPago === 'PLIN'));
+    const totalEfectivo = suma(pagadasHoy.filter(b => b.formaPago === 'EFECTIVO'));
+    const totalYape     = suma(pagadasHoy.filter(b => b.formaPago === 'YAPE'));
+    const totalPlin     = suma(pagadasHoy.filter(b => b.formaPago === 'PLIN'));
     const totalFiado    = suma(fiadas);
     const totalCaja     = totalEfectivo + totalYape + totalPlin;
 

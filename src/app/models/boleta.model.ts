@@ -14,8 +14,8 @@ export interface Boleta {
   clienteNombre: string;
   clienteDni: string;
   fecha: string;
+  fechaPago?: string;
   total: number;
-  estado: 'CONFIRMADA' | 'PENDIENTE' | 'ANULADA';
   formaPago: FormaPago;
   estadoPago: EstadoPago;
   detalles: DetalleBoleta[];

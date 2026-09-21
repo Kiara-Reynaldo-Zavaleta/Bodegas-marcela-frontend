@@ -18,7 +18,6 @@
             <div class="boleta-header">
               <span class="boleta-id">Boleta #{{ boleta.id.toString().padStart(3, '0') }}</span>
               <div class="boleta-badges">
-                <span class="badge" [ngClass]="badgeClass(boleta.estado)">{{ boleta.estado }}</span>
                 @if (boleta.estadoPago === 'FIADO') {
                   <span class="badge badge-warning">FIADO</span>
                 }
