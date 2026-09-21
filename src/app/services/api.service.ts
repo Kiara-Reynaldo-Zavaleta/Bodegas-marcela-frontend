@@ -87,8 +87,9 @@ export class ApiService {
       estadoPago: b.estadoPago ?? b.estado_pago ?? undefined,
       detalles: (b.detalles ?? []).map((d: any) => ({
         ...d,
-        productoNombre: d.productoNombre ?? d.producto_nombre ?? '',
-        precioUnitario: d.precioUnitario ?? d.precio_unitario ?? 0,
+        productoId:     d.productoId     ?? d.producto?.id     ?? 0,
+        productoNombre: d.productoNombre ?? d.producto?.nombre ?? '',
+        precioUnitario: d.precioUnitario ?? d.producto?.precio ?? 0,
       })),
     };
   }
