@@ -24,6 +24,17 @@ export class Dashboard implements OnInit {
   productosAgotados = computed(() => this.productos().filter(p => p.stock === 0));
   productosConStock = computed(() => this.productos().filter(p => p.stock > 0));
 
+  readonly CATEGORIAS = ['Todas', 'Abarrotes', 'Bebidas', 'Snacks', 'Limpieza', 'Higiene', 'Enlatados', 'Lácteos'];
+  categoriaSeleccionada = signal<string>('Todas');
+  productosFiltradosCat = signal<Producto[]>([]);
+  cargandoCat = signal(false);
+
+  productosRapido = computed(() =>
+    this.categoriaSeleccionada() === 'Todas'
+      ? this.productosConStock()
+      : this.productosFiltradosCat()
+  );
+
   ngOnInit() {
     this.api.getBoletas().subscribe({
       next: data => {
@@ -40,6 +51,20 @@ export class Dashboard implements OnInit {
   boletasRecientes = computed(() =>
     [...this.boletas()].sort((a, b) => b.id - a.id).slice(0, 5)
   );
+
+  seleccionarCategoria(cat: string) {
+    this.categoriaSeleccionada.set(cat);
+    if (cat === 'Todas') return;
+    this.cargandoCat.set(true);
+    this.productosFiltradosCat.set([]);
+    this.api.getProductos(cat).subscribe({
+      next: data => {
+        this.productosFiltradosCat.set(data);
+        this.cargandoCat.set(false);
+      },
+      error: () => this.cargandoCat.set(false)
+    });
+  }
 
   badgeClass(estado: string): string {
     const map: Record<string, string> = {

@@ -46,7 +46,6 @@
   border-bottom: 2px solid #FBBF24;
 }
 
-/* Hamburger button — hidden on desktop */
 .hamburger {
   display: none;
   flex-direction: column;
@@ -82,7 +81,6 @@
   transform: translateY(-7px) rotate(-45deg);
 }
 
-/* ── Mobile ─────────────────────────────────────────── */
 @media (max-width: 768px) {
   .app-header {
     flex-wrap: wrap;
@@ -100,7 +98,6 @@
     display: flex;
   }
 
-  /* Nav collapses into a dropdown */
   .nav-links {
     display: none;
     flex-direction: column;
@@ -124,7 +121,6 @@
     border-bottom: none;
   }
 
-  /* Override desktop underline indicator on mobile */
   .nav-links a:hover,
   .nav-links a.active {
     border-bottom: 1px solid #F3F4F6;

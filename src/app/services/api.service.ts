@@ -11,8 +11,11 @@ export class ApiService {
   private http = inject(HttpClient);
   private base = environment.apiUrl;
 
-  getProductos(): Observable<Producto[]> {
-    return this.http.get<Producto[]>(`${this.base}/productos`);
+  getProductos(categoria?: string): Observable<Producto[]> {
+    const url = categoria
+      ? `${this.base}/productos?categoria=${encodeURIComponent(categoria)}`
+      : `${this.base}/productos`;
+    return this.http.get<Producto[]>(url);
   }
 
   createProducto(data: ProductoForm): Observable<Producto> {

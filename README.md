@@ -1,59 +1,23 @@
-# BodegasMarcelaFrontend
+# Bodegas Marcela - Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.1.8.
+Interfaz web del sistema de inventario y ventas para una bodega. Este repositorio es solo el frontend: el backend corre por separado y expone una API REST que esta aplicación consume.
 
-## Development server
+## Tecnologías
 
-To start a local development server, run:
+Angular con componentes standalone y signals, TypeScript, y Chart.js para los gráficos del dashboard. El diseño está hecho con CSS propio, sin librerías de UI externas.
 
-```bash
-ng serve
-```
+## Qué hace
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Incluye una pantalla principal con ventas recientes y stock, un módulo para registrar ventas y ver el historial de boletas, una tabla de inventario donde se pueden editar productos y ajustar stock, una sección de reportes con gráficos de ventas por día, hora y producto, y una sección de cuentas por cobrar para las ventas al crédito.
 
-## Code scaffolding
+## Cómo correrlo localmente
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Necesitas tener Node.js instalado. Luego, desde la raíz del proyecto:
+npm install
+npm start
 
-```bash
-ng generate component component-name
-```
+La app queda disponible en http://localhost:4200. Por defecto apunta al backend en http://localhost:8080/api, así que también necesitas tener el backend corriendo para que funcione. Si quieres cambiar la URL del backend, está en `src/environments/environment.ts`.
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Para generar el build de producción:
 
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+npm run build

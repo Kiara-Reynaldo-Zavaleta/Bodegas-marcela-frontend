@@ -220,7 +220,6 @@
   font-size: 13px;
 }
 
-/* ── Mobile ─────────────────────────────────────────── */
 @media (max-width: 768px) {
   .reportes-container {
     padding: 20px 16px 32px;
@@ -254,7 +253,6 @@
     gap: 8px;
   }
 
-  /* Allow the detail table to scroll horizontally */
   .boleta-detalles {
     overflow-x: auto;
   }

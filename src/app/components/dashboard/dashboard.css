@@ -164,6 +164,37 @@
   font-size: 14px;
 }
 
+.cat-filtros {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.cat-btn {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1.5px solid #E5E7EB;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6B7280;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  font-family: inherit;
+}
+
+.cat-btn:hover {
+  border-color: #D1D5DB;
+  color: #111827;
+}
+
+.cat-btn.activo {
+  border-color: #FBBF24;
+  background: #FEF3C7;
+  color: #92400E;
+}
+
 .productos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -287,7 +318,6 @@
   color: #111827;
 }
 
-/* ── Mobile ─────────────────────────────────────────── */
 @media (max-width: 768px) {
   .welcome {
     padding: 24px 16px 16px;

@@ -160,7 +160,6 @@
   margin-top: 6px;
 }
 
-/* ── Mobile ─────────────────────────────────────────── */
 @media (max-width: 768px) {
   .inventario-container {
     padding: 16px;
@@ -176,7 +175,6 @@
     width: 100%;
   }
 
-  /* Allow the table to scroll horizontally instead of overflowing */
   .table-card {
     overflow-x: auto;
     overflow-y: visible;
