@@ -219,3 +219,43 @@
   color: #EF4444;
   font-size: 13px;
 }
+
+/* ── Mobile ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .reportes-container {
+    padding: 20px 16px 32px;
+    gap: 16px;
+  }
+
+  .chart-wrapper {
+    height: 200px;
+  }
+
+  .chart-wrapper--tall {
+    height: 220px;
+  }
+
+  .dni-search {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dni-input {
+    max-width: 100%;
+  }
+
+  .boleta-row-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .boleta-row-right {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Allow the detail table to scroll horizontally */
+  .boleta-detalles {
+    overflow-x: auto;
+  }
+}

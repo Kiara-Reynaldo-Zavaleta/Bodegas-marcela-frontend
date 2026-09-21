@@ -45,3 +45,99 @@
   color: #111827;
   border-bottom: 2px solid #FBBF24;
 }
+
+/* Hamburger button — hidden on desktop */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  height: 56px;
+  flex-shrink: 0;
+}
+
+.hamburger span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: #111827;
+  border-radius: 2px;
+  transition: transform 0.22s ease, opacity 0.22s ease;
+}
+
+.hamburger.abierto span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.hamburger.abierto span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.hamburger.abierto span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ── Mobile ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .app-header {
+    flex-wrap: wrap;
+    padding: 0 16px;
+    height: auto;
+    min-height: 56px;
+  }
+
+  .brand {
+    height: 56px;
+    font-size: 16px;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  /* Nav collapses into a dropdown */
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+    padding: 6px 0 10px;
+    border-top: 1px solid #E5E7EB;
+  }
+
+  .nav-links.nav-abierta {
+    display: flex;
+  }
+
+  .nav-links a {
+    padding: 13px 4px;
+    font-size: 15px;
+    border-bottom: 1px solid #F3F4F6;
+  }
+
+  .nav-links a:last-child {
+    border-bottom: none;
+  }
+
+  /* Override desktop underline indicator on mobile */
+  .nav-links a:hover,
+  .nav-links a.active {
+    border-bottom: 1px solid #F3F4F6;
+    color: #111827;
+  }
+
+  .nav-links a.active {
+    color: #FBBF24;
+    font-weight: 700;
+  }
+
+  .nav-links a:last-child:hover,
+  .nav-links a:last-child.active {
+    border-bottom: none;
+  }
+}

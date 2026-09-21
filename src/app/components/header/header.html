@@ -1,5 +1,5 @@
 <header class="app-header">
-  <a class="brand" routerLink="/">
+  <a class="brand" routerLink="/" (click)="cerrarMenu()">
     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9.5L12 4l9 5.5V20H3V9.5z"/>
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20V12h6v8"/>
@@ -7,11 +7,17 @@
     <span>Bodegas Marcela</span>
   </a>
 
-  <nav class="nav-links">
-    <a routerLink="/inventario" routerLinkActive="active">Inventario</a>
-    <a routerLink="/ventas" routerLinkActive="active">Ventas</a>
-    <a routerLink="/reportes" routerLinkActive="active">Reportes</a>
-    <a routerLink="/cobrar" routerLinkActive="active">Por Cobrar</a>
+  <button class="hamburger" (click)="toggleMenu()" [class.abierto]="menuAbierto()" aria-label="Abrir menú">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <nav class="nav-links" [class.nav-abierta]="menuAbierto()">
+    <a routerLink="/inventario" routerLinkActive="active" (click)="cerrarMenu()">Inventario</a>
+    <a routerLink="/ventas" routerLinkActive="active" (click)="cerrarMenu()">Ventas</a>
+    <a routerLink="/reportes" routerLinkActive="active" (click)="cerrarMenu()">Reportes</a>
+    <a routerLink="/cobrar" routerLinkActive="active" (click)="cerrarMenu()">Por Cobrar</a>
   </nav>
 
 </header>

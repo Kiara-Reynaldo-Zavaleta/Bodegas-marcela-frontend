@@ -159,3 +159,37 @@
   font-size: 13px;
   margin-top: 6px;
 }
+
+/* ── Mobile ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .inventario-container {
+    padding: 16px;
+  }
+
+  .inv-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .inv-header button {
+    width: 100%;
+  }
+
+  /* Allow the table to scroll horizontally instead of overflowing */
+  .table-card {
+    overflow-x: auto;
+    overflow-y: visible;
+  }
+
+  .modal-overlay {
+    padding: 16px;
+    align-items: flex-end;
+  }
+
+  .modal-card {
+    max-width: 100%;
+    padding: 20px 18px;
+    border-radius: 14px 14px 10px 10px;
+  }
+}

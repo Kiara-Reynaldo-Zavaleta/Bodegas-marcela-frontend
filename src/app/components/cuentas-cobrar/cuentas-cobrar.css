@@ -103,3 +103,22 @@
   color: #6B7280;
   font-size: 15px;
 }
+
+/* ── Mobile ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .cobrar-container {
+    padding: 16px;
+  }
+
+  .resumen-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  /* Allow the table to scroll horizontally */
+  .tabla-card {
+    overflow-x: auto;
+    overflow-y: visible;
+  }
+}
