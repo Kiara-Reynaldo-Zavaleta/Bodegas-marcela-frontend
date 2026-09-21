@@ -85,6 +85,11 @@ export class ApiService {
       ...b,
       formaPago:  b.formaPago  ?? b.forma_pago  ?? undefined,
       estadoPago: b.estadoPago ?? b.estado_pago ?? undefined,
+      detalles: (b.detalles ?? []).map((d: any) => ({
+        ...d,
+        productoNombre: d.productoNombre ?? d.producto_nombre ?? '',
+        precioUnitario: d.precioUnitario ?? d.precio_unitario ?? 0,
+      })),
     };
   }
 }
