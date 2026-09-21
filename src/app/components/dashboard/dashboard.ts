@@ -25,15 +25,15 @@ export class Dashboard implements OnInit {
   productosConStock = computed(() => this.productos().filter(p => p.stock > 0));
 
   readonly CATEGORIAS = ['Todas', 'Abarrotes', 'Bebidas', 'Snacks', 'Limpieza', 'Higiene', 'Enlatados', 'Lácteos'];
-  categoriaSeleccionada = signal<string>('Todas');
+  categoriaSeleccionada = signal<string | null>(null);
   productosFiltradosCat = signal<Producto[]>([]);
   cargandoCat = signal(false);
 
-  productosRapido = computed(() =>
-    this.categoriaSeleccionada() === 'Todas'
-      ? this.productosConStock()
-      : this.productosFiltradosCat()
-  );
+  productosRapido = computed(() => {
+    const cat = this.categoriaSeleccionada();
+    if (cat === null) return [];
+    return cat === 'Todas' ? this.productosConStock() : this.productosFiltradosCat();
+  });
 
   ngOnInit() {
     this.api.getBoletas().subscribe({

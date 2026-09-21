@@ -80,7 +80,9 @@
           >{{ cat }}</button>
         }
       </div>
-      @if (cargandoCat()) {
+      @if (categoriaSeleccionada() === null) {
+        <p class="text-muted">Selecciona una categoría para ver los productos.</p>
+      } @else if (cargandoCat()) {
         <p class="text-muted">Cargando...</p>
       } @else {
         <div class="productos-grid">
