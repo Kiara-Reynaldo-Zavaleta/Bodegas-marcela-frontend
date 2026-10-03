@@ -425,6 +425,12 @@
   padding: 0;
 }
 
+.pista-busqueda {
+  font-size: var(--fs-100);
+  color: var(--color-text-muted);
+  max-width: 44ch;
+}
+
 .empty-historial {
   text-align: center;
   padding: var(--sp-8) var(--sp-6);
@@ -500,6 +506,12 @@
   display: flex;
   justify-content: flex-end;
   margin-top: var(--sp-5);
+}
+
+.pista-busqueda {
+  font-size: var(--fs-100);
+  color: var(--color-text-muted);
+  max-width: 44ch;
 }
 
 .empty-historial {

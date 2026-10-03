@@ -5,9 +5,10 @@ import { ApiService } from '../../services/api.service';
 import { ModalService } from '../../services/modal.service';
 import { ImpresionService } from '../../services/impresion.service';
 import { Boleta } from '../../models/boleta.model';
+import { ResumenCaja } from '../../models/reporte.model';
 import { Producto, STOCK_BAJO } from '../../models/producto.model';
 import { mensajeDeError } from '../../errores';
-import { diaEnLima, ZONA_BODEGA } from '../../zona-horaria';
+
 import { Dialog } from '../dialog/dialog';
 import { ErrorState } from '../error-state/error-state';
 
@@ -38,11 +39,17 @@ export class Dashboard implements OnInit {
       .sort((a, b) => a.localeCompare(b, 'es'))
   ]);
 
-  boletas  = signal<Boleta[]>([]);
+  /** Las 5 ventas recientes, no el historial entero. */
+  boletasRecientes = signal<Boleta[]>([]);
+  /** Deuda viva acumulada: viene de /boletas/fiado, no de la caja del día. */
+  porCobrar = signal<Boleta[]>([]);
+  caja      = signal<ResumenCaja | null>(null);
   productos = signal<Producto[]>([]);
 
+  cargandoCaja      = signal(true);
   cargandoBoletas   = signal(true);
   cargandoProductos = signal(true);
+  errorCaja         = signal(false);
   errorBoletas      = signal(false);
   errorProductos    = signal(false);
 
@@ -50,37 +57,17 @@ export class Dashboard implements OnInit {
   categoriaSeleccionada = signal<string>(TODAS);
 
   readonly hoy = new Date();
-  private readonly diaHoy = diaEnLima(this.hoy);
 
   // --- Resumen del dia ---
-  // La pantalla abria con "¡Bienvenida de nuevo!" y nada mas: el dato que
-  // importa al abrir (cuanto se vendio hoy) estaba escondido detras de un boton
-  // en el pie. Ahora es lo primero.
+  // El cálculo lo hace el backend: decide el día en hora de Lima y suma por
+  // fechaPago. Antes había que descargar las 81 boletas completas, con todos
+  // sus detalles, solo para sumar cuatro números en el navegador.
 
-  /** Compara días en hora de Lima, no en la del dispositivo. Una venta de las
-   *  21:00 en Lima es de hoy aunque el celular esté en otra zona horaria. */
-  private esHoy(fecha?: string | null): boolean {
-    if (!fecha) return false;
-    const d = new Date(fecha);
-    return !isNaN(d.getTime()) && diaEnLima(d) === this.diaHoy;
-  }
+  totalCajaHoy     = computed(() => this.caja()?.total ?? 0);
+  boletasHoyConteo = computed(() => this.caja()?.boletas ?? 0);
 
-  private boletasHoy = computed(() => this.boletas().filter(b => this.esHoy(b.fecha)));
-
-  /** Cobradas hoy: se mide por fechaPago, no por fecha de emision (un fiado
-   *  emitido ayer y cobrado hoy entra en la caja de hoy). */
-  private pagadasHoy = computed(() =>
-    this.boletas().filter(b => b.estadoPago === 'PAGADO' && this.esHoy(b.fechaPago))
-  );
-
-  private suma(lista: Boleta[]) { return lista.reduce((acc, b) => acc + b.total, 0); }
-
-  totalCajaHoy    = computed(() => this.suma(this.pagadasHoy()));
-  boletasHoyConteo = computed(() => this.boletasHoy().length);
-
-  /** Deuda viva total, no solo la de hoy: es el numero que se cobra. */
   totalPorCobrar = computed(() =>
-    this.suma(this.boletas().filter(b => b.estadoPago === 'FIADO'))
+    this.porCobrar().reduce((acc, b) => acc + b.total, 0)
   );
 
   // --- Alertas de stock ---
@@ -90,10 +77,6 @@ export class Dashboard implements OnInit {
     this.productos()
       .filter(p => p.stock <= STOCK_BAJO)
       .sort((a, b) => a.stock - b.stock)
-  );
-
-  boletasRecientes = computed(() =>
-    [...this.boletas()].sort((a, b) => b.id - a.id).slice(0, 5)
   );
 
   // Se filtra sobre los productos ya cargados en lugar de pedir cada categoria
@@ -106,16 +89,32 @@ export class Dashboard implements OnInit {
   });
 
   ngOnInit() {
+    this.cargarCaja();
     this.cargarBoletas();
     this.cargarProductos();
+  }
+
+  cargarCaja() {
+    this.cargandoCaja.set(true);
+    this.errorCaja.set(false);
+    // Sin fecha: el backend usa el día actual en Lima.
+    this.api.getCaja().subscribe({
+      next: c => { this.caja.set(c); this.cargandoCaja.set(false); },
+      error: () => { this.cargandoCaja.set(false); this.errorCaja.set(true); }
+    });
+
+    this.api.getBoletasFiado().subscribe({
+      next: d => this.porCobrar.set(d),
+      error: () => this.porCobrar.set([])
+    });
   }
 
   cargarBoletas() {
     this.cargandoBoletas.set(true);
     this.errorBoletas.set(false);
-    this.api.getBoletas().subscribe({
-      next: data => {
-        this.boletas.set(data);
+    this.api.getBoletasPagina(0, 5).subscribe({
+      next: p => {
+        this.boletasRecientes.set(p.contenido);
         this.cargandoBoletas.set(false);
       },
       error: () => {
@@ -196,7 +195,12 @@ export class Dashboard implements OnInit {
     if (!ok) return;
 
     this.api.deleteBoleta(boleta.id).subscribe({
-      next: () => this.boletas.update(list => list.filter(b => b.id !== boleta.id)),
+      next: () => {
+        // Se recarga: al quitar una de las 5 recientes entra la sexta, y la
+        // caja del día cambia.
+        this.cargarBoletas();
+        this.cargarCaja();
+      },
       error: err => this.modal.alertarError(
         'No se pudo eliminar',
         mensajeDeError(err, 'eliminar la boleta') + ' La boleta sigue registrada.'
@@ -204,26 +208,30 @@ export class Dashboard implements OnInit {
     });
   }
 
-  /** Desglose del dia. El total ya se ve arriba; esto abre el detalle por medio de pago. */
+  /** Desglose de la caja. Los números ya vienen calculados del backend. */
   async resumenCaja() {
-    const pagadas = this.pagadasHoy();
-    const fiadasHoy = this.boletasHoy().filter(b => b.estadoPago === 'FIADO');
+    const c = this.caja();
+    if (!c) {
+      await this.modal.alertarError(
+        'No se pudo cargar la caja',
+        'Todavía no hay datos del día. Revisa tu conexión y vuelve a intentarlo.'
+      );
+      return;
+    }
 
-    const porMedio = (medio: string) =>
-      `S/ ${this.suma(pagadas.filter(b => b.formaPago === medio)).toFixed(2)}`;
-
+    const sol = (n: number) => `S/ ${n.toFixed(2)}`;
     await this.modal.open({
       type: 'info',
       title: 'Resumen de caja de hoy',
       rows: [
-        { label: 'Fecha',             value: this.hoy.toLocaleDateString('es-PE', { timeZone: ZONA_BODEGA }) },
-        { label: 'Boletas emitidas',  value: String(this.boletasHoyConteo()) },
-        { label: 'Efectivo',          value: porMedio('EFECTIVO') },
-        { label: 'Yape',              value: porMedio('YAPE') },
-        { label: 'Plin',              value: porMedio('PLIN') },
-        { label: 'Total cobrado hoy', value: `S/ ${this.totalCajaHoy().toFixed(2)}` },
-        { label: 'Fiado de hoy',      value: `S/ ${this.suma(fiadasHoy).toFixed(2)}` },
-        { label: 'Por cobrar (total)', value: `S/ ${this.totalPorCobrar().toFixed(2)}` }
+        { label: 'Fecha',              value: c.fecha },
+        { label: 'Boletas emitidas',   value: String(c.boletas) },
+        { label: 'Efectivo',           value: sol(c.efectivo) },
+        { label: 'Yape',               value: sol(c.yape) },
+        { label: 'Plin',               value: sol(c.plin) },
+        { label: 'Total cobrado hoy',  value: sol(c.total) },
+        { label: 'Fiado de hoy',       value: sol(c.fiado) },
+        { label: 'Por cobrar (total)', value: sol(this.totalPorCobrar()) }
       ],
       confirmLabel: 'Cerrar'
     });

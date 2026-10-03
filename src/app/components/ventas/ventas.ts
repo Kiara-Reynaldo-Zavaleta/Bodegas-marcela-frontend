@@ -1,4 +1,5 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
+import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { NgClass, DatePipe, DecimalPipe } from '@angular/common';
 import { ApiService } from '../../services/api.service';
@@ -6,6 +7,7 @@ import { ModalService } from '../../services/modal.service';
 import { ImpresionService } from '../../services/impresion.service';
 import { Producto } from '../../models/producto.model';
 import { Boleta, DetalleBoleta, FormaPago } from '../../models/boleta.model';
+import { Pagina } from '../../models/reporte.model';
 import { leerError, mensajeDeError, textoStockInsuficiente } from '../../errores';
 import { Dialog } from '../dialog/dialog';
 import { ErrorState } from '../error-state/error-state';
@@ -18,7 +20,7 @@ const POR_PAGINA = 20;
   styleUrl: './ventas.css',
   imports: [FormsModule, NgClass, DatePipe, DecimalPipe, Dialog, ErrorState]
 })
-export class Ventas implements OnInit {
+export class Ventas implements OnInit, OnDestroy {
   private api       = inject(ApiService);
   private modal     = inject(ModalService);
   private impresion = inject(ImpresionService);
@@ -54,34 +56,36 @@ export class Ventas implements OnInit {
   puedeConfirmar = computed(() => this.detalles().length > 0);
 
   // --- Historial ---
-  boletas            = signal<Boleta[]>([]);
+  // Paginado y buscado en el servidor: antes se descargaban todas las boletas
+  // con sus detalles para filtrar y paginar en el navegador.
+  pagina             = signal<Pagina<Boleta> | null>(null);
   cargandoHistorial  = signal(false);
   errorHistorial     = signal(false);
   busquedaHistorial  = signal('');
-  paginaActual       = signal(1);
   boletaSeleccionada = signal<Boleta | null>(null);
 
   private boletasCargadas = false;
+  private teclea$ = new Subject<string>();
+  private destruido$ = new Subject<void>();
 
-  boletasFiltradas = computed(() => {
-    const q = this.busquedaHistorial().toLowerCase().trim();
-    if (!q) return this.boletas();
-    return this.boletas().filter(b =>
-      b.clienteNombre.toLowerCase().includes(q) || b.clienteDni.includes(q)
-    );
-  });
-
-  boletasPaginadas = computed(() => {
-    const inicio = (this.paginaActual() - 1) * POR_PAGINA;
-    return this.boletasFiltradas().slice(inicio, inicio + POR_PAGINA);
-  });
-
-  totalPaginas = computed(() =>
-    Math.max(1, Math.ceil(this.boletasFiltradas().length / POR_PAGINA))
-  );
+  boletasPaginadas = computed(() => this.pagina()?.contenido ?? []);
+  totalElementos   = computed(() => this.pagina()?.totalElementos ?? 0);
+  totalPaginas     = computed(() => Math.max(1, this.pagina()?.totalPaginas ?? 1));
+  /** El backend cuenta desde 0; en pantalla se muestra desde 1. */
+  paginaActual     = computed(() => (this.pagina()?.pagina ?? 0) + 1);
+  historialVacio   = computed(() => !this.busquedaHistorial().trim() && this.totalElementos() === 0);
 
   ngOnInit() {
     this.cargarProductos();
+
+    // Se espera a que deje de escribir para no lanzar una petición por tecla.
+    this.teclea$.pipe(debounceTime(300), takeUntil(this.destruido$))
+      .subscribe(() => this.cargarHistorial(0));
+  }
+
+  ngOnDestroy() {
+    this.destruido$.next();
+    this.destruido$.complete();
   }
 
   cargarProductos() {
@@ -103,17 +107,15 @@ export class Ventas implements OnInit {
 
   cambiarVista(v: 'nueva' | 'historial') {
     this.vista.set(v);
-    if (v === 'historial' && !this.boletasCargadas) this.cargarHistorial();
+    if (v === 'historial' && !this.boletasCargadas) this.cargarHistorial(0);
   }
 
-  cargarHistorial() {
+  cargarHistorial(pagina = 0) {
     this.cargandoHistorial.set(true);
     this.errorHistorial.set(false);
-    this.api.getBoletas().subscribe({
-      next: data => {
-        // Ordena por id en lugar de confiar en el orden del backend, igual que
-        // el panel: antes uno hacia reverse() y el otro ordenaba por id.
-        this.boletas.set([...data].sort((a, b) => b.id - a.id));
+    this.api.getBoletasPagina(pagina, POR_PAGINA, this.busquedaHistorial()).subscribe({
+      next: p => {
+        this.pagina.set(p);
         this.boletasCargadas = true;
         this.cargandoHistorial.set(false);
       },
@@ -126,11 +128,18 @@ export class Ventas implements OnInit {
 
   onBusquedaHistorial(value: string) {
     this.busquedaHistorial.set(value);
-    this.paginaActual.set(1);
+    this.teclea$.next(value);
   }
 
-  anteriorPagina() { if (this.paginaActual() > 1) this.paginaActual.update(p => p - 1); }
-  siguientePagina() { if (this.paginaActual() < this.totalPaginas()) this.paginaActual.update(p => p + 1); }
+  anteriorPagina() {
+    const p = this.pagina();
+    if (p && p.pagina > 0) this.cargarHistorial(p.pagina - 1);
+  }
+
+  siguientePagina() {
+    const p = this.pagina();
+    if (p && p.pagina + 1 < p.totalPaginas) this.cargarHistorial(p.pagina + 1);
+  }
 
   verBoleta(boleta: Boleta) { this.boletaSeleccionada.set(boleta); }
   cerrarDetalle() { this.boletaSeleccionada.set(null); }
@@ -158,7 +167,8 @@ export class Ventas implements OnInit {
     if (!ok) return;
 
     this.api.deleteBoleta(boleta.id).subscribe({
-      next: () => this.boletas.update(list => list.filter(b => b.id !== boleta.id)),
+      // Se recarga la página: al borrar una fila sube la primera de la siguiente.
+      next: () => this.cargarHistorial(this.pagina()?.pagina ?? 0),
       error: err => this.modal.alertarError(
         'No se pudo eliminar',
         mensajeDeError(err, 'eliminar la boleta') + ' La boleta sigue registrada.'

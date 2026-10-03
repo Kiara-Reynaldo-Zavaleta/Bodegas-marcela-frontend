@@ -210,7 +210,7 @@
         </div>
       </div>
 
-      @if (cargandoHistorial()) {
+      @if (cargandoHistorial() && !pagina()) {
         <div class="card"><p class="text-muted" role="status">Cargando historial...</p></div>
       } @else if (errorHistorial()) {
         <div class="card">
@@ -220,22 +220,29 @@
             (reintentar)="cargarHistorial()"
           />
         </div>
-      } @else if (boletas().length === 0) {
+      } @else if (historialVacio()) {
         <div class="card empty-historial"><p>Todavía no hay boletas registradas.</p></div>
       } @else {
         <p class="historial-info" role="status">
-          {{ boletasFiltradas().length }}
-          {{ boletasFiltradas().length === 1 ? 'boleta' : 'boletas' }}
-          @if (busquedaHistorial()) {
-            de {{ boletas().length }} en total
+          @if (cargandoHistorial()) {
+            Buscando...
+          } @else {
+            {{ totalElementos() }}
+            {{ totalElementos() === 1 ? 'boleta' : 'boletas' }}
+            @if (busquedaHistorial().trim()) {
+              con "{{ busquedaHistorial() }}"
+            }
           }
         </p>
 
-        @if (boletasFiltradas().length === 0) {
+        @if (totalElementos() === 0) {
           <!-- Antes la tabla quedaba con encabezados y cero filas, sin decir
                nada: parecía que la pantalla se había roto. -->
           <div class="card empty-historial">
             <p>Ninguna boleta coincide con "{{ busquedaHistorial() }}".</p>
+            <p class="pista-busqueda">
+              Si buscas por nombre, escríbelo con tildes tal como está guardado.
+            </p>
             <button class="btn-outline" type="button" (click)="onBusquedaHistorial('')">
               Ver todas las boletas
             </button>
@@ -291,11 +298,15 @@
 
           @if (totalPaginas() > 1) {
             <div class="paginacion">
-              <button class="btn-outline btn-sm" type="button" [disabled]="paginaActual() === 1" (click)="anteriorPagina()">
+              <button class="btn-outline btn-sm" type="button"
+                      [disabled]="paginaActual() === 1 || cargandoHistorial()"
+                      (click)="anteriorPagina()">
                 Anterior
               </button>
               <span class="pagina-info" role="status">Página {{ paginaActual() }} de {{ totalPaginas() }}</span>
-              <button class="btn-outline btn-sm" type="button" [disabled]="paginaActual() >= totalPaginas()" (click)="siguientePagina()">
+              <button class="btn-outline btn-sm" type="button"
+                      [disabled]="paginaActual() >= totalPaginas() || cargandoHistorial()"
+                      (click)="siguientePagina()">
                 Siguiente
               </button>
             </div>

@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { Producto, ProductoForm } from '../models/producto.model';
 import { Boleta, BoletaRequest } from '../models/boleta.model';
-import { VentaPorDia, ProductoMasVendido, VentaPorHora } from '../models/reporte.model';
+import { VentaPorDia, ProductoMasVendido, VentaPorHora, ResumenCaja, Pagina } from '../models/reporte.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -24,6 +24,27 @@ export class ApiService {
 
   addStock(id: number, cantidad: number): Observable<Producto> {
     return this.http.patch<Producto>(`${this.base}/productos/${id}/stock`, { cantidad });
+  }
+
+  /**
+   * Boletas paginadas, de la más reciente a la más antigua.
+   * `q` busca por nombre (que lo contenga) o por DNI (que empiece así).
+   * El backend limita `size` a 100.
+   */
+  getBoletasPagina(pagina: number, tamano: number, q = ''): Observable<Pagina<Boleta>> {
+    let url = `${this.base}/boletas?page=${pagina}&size=${tamano}`;
+    if (q.trim()) url += `&q=${encodeURIComponent(q.trim())}`;
+    return this.http.get<Pagina<Boleta>>(url).pipe(
+      map(p => ({ ...p, contenido: (p.contenido ?? []).map(b => this.normalizarBoleta(b)) }))
+    );
+  }
+
+  /** Caja del día. Sin fecha, el backend usa el día actual en Lima. */
+  getCaja(fecha?: string): Observable<ResumenCaja> {
+    const url = fecha
+      ? `${this.base}/reportes/caja?fecha=${fecha}`
+      : `${this.base}/reportes/caja`;
+    return this.http.get<ResumenCaja>(url);
   }
 
   getBoletas(): Observable<Boleta[]> {

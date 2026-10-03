@@ -9,12 +9,12 @@
     </button>
   </div>
 
-  @if (errorBoletas()) {
+  @if (errorCaja()) {
     <div class="card">
       <app-error-state
         titulo="No se pudo cargar el resumen del día"
         detalle="Los números de abajo no están disponibles. Revisa tu conexión y vuelve a intentarlo."
-        (reintentar)="cargarBoletas()"
+        (reintentar)="cargarCaja()"
       />
     </div>
   } @else {
@@ -22,7 +22,7 @@
       <div class="cifra cifra--caja">
         <dt>Cobrado hoy</dt>
         <dd>
-          @if (cargandoBoletas()) { <span class="cifra-cargando">···</span> }
+          @if (cargandoCaja()) { <span class="cifra-cargando">···</span> }
           @else { S/ {{ totalCajaHoy() | number:'1.2-2' }} }
         </dd>
       </div>
@@ -30,7 +30,7 @@
       <div class="cifra">
         <dt>Boletas de hoy</dt>
         <dd>
-          @if (cargandoBoletas()) { <span class="cifra-cargando">···</span> }
+          @if (cargandoCaja()) { <span class="cifra-cargando">···</span> }
           @else { {{ boletasHoyConteo() }} }
         </dd>
       </div>
@@ -38,10 +38,10 @@
       <div class="cifra" [class.cifra--alerta]="totalPorCobrar() > 0">
         <dt>Por cobrar</dt>
         <dd>
-          @if (cargandoBoletas()) { <span class="cifra-cargando">···</span> }
+          @if (cargandoCaja()) { <span class="cifra-cargando">···</span> }
           @else { S/ {{ totalPorCobrar() | number:'1.2-2' }} }
         </dd>
-        @if (!cargandoBoletas() && totalPorCobrar() > 0) {
+        @if (!cargandoCaja() && totalPorCobrar() > 0) {
           <a class="cifra-enlace" routerLink="/cobrar">Ver quién debe</a>
         }
       </div>
