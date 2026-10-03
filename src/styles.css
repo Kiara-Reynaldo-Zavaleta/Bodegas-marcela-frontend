@@ -5,29 +5,92 @@
 }
 
 :root {
+  /* --- Marca --- */
+  /* El amarillo solo se usa como RELLENO (botones, barras de gráficos), donde
+     encima va texto oscuro. Para texto o indicadores finos sobre blanco se usa
+     --color-accent-ink, porque #FBBF24 sobre blanco da 1.67:1 (ilegible). */
   --color-primary: #FBBF24;
   --color-primary-hover: #F59E0B;
+  --color-accent-ink: #B45309;      /* 5.02:1 sobre blanco  */
+  --color-accent-ink-strong: #92400E; /* 7.09:1 sobre blanco */
+
   --color-secondary: #1D4ED8;
   --color-secondary-hover: #1E40AF;
+
+  /* --- Superficies --- */
   --color-bg: #F5F5F7;
   --color-card: #FFFFFF;
-  --color-text: #111827;
-  --color-text-muted: #6B7280;
+  --color-surface-alt: #F9FAFB;
+
+  /* --- Texto (todos >= 4.5:1 sobre su fondo) --- */
+  --color-text: #111827;            /* 16.1:1 */
+  --color-text-muted: #4B5563;      /*  7.6:1 */
+  --color-text-subtle: #6B7280;     /*  4.8:1 - minimo para 14px */
+
+  /* --- Bordes ---
+     border = separadores decorativos; border-strong = bordes de controles,
+     que necesitan 3:1 para ser perceptibles. */
   --color-border: #E5E7EB;
-  --color-danger: #EF4444;
+  --color-border-strong: #7B8494;   /*  3.8:1 sobre blanco */
+
+  /* --- Estados --- */
+  --color-danger: #B91C1C;          /*  6.5:1 sobre blanco */
+  --color-danger-strong: #991B1B;
   --color-danger-bg: #FEE2E2;
-  --color-success: #10B981;
+  --color-danger-border: #FCA5A5;
+  --color-success: #065F46;         /*  6.8:1 sobre #D1FAE5 */
   --color-success-bg: #D1FAE5;
-  --color-warning: #F59E0B;
+  --color-warning: #92400E;         /*  6.4:1 sobre #FEF3C7 */
   --color-warning-bg: #FEF3C7;
+
+  /* --- Escala tipografica (rem, base 16px) ---
+     Nada por debajo de --fs-100. La app la usan personas de 45+ en celular:
+     cualquier cosa bajo 14px es inaccesible, y los campos de formulario
+     necesitan >=16px o iOS Safari hace zoom automatico al enfocarlos. */
+  --fs-100: 0.875rem;  /* 14px - metadatos, badges, ayudas */
+  --fs-200: 1rem;      /* 16px - texto base, inputs, botones, tablas */
+  --fs-300: 1.125rem;  /* 18px - totales, subtitulos */
+  --fs-400: 1.25rem;   /* 20px - titulos de seccion */
+  --fs-500: 1.5rem;    /* 24px - titulos de pagina */
+  --fs-600: 1.75rem;   /* 28px - h1 principal */
+
+  /* --- Areas tactiles ---
+     48px = recomendacion Android/WCAG 2.2 AAA. 44px = minimo Apple/WCAG AA. */
+  --tap: 48px;
+  --tap-min: 44px;
+  --tap-gap: 12px;     /* separacion minima entre dos acciones adyacentes */
+
+  /* --- Espaciado --- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+
   --radius: 12px;
+  --radius-sm: 8px;
   --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+
+  /* --- Punto de quiebre unico ---
+     Antes habia tres (768/860/900) descoordinados entre si. */
+  --bp-mobile: 768px;
+}
+
+html {
+  /* Sin tamaño fijo: respeta el ajuste de "texto grande" del navegador/sistema.
+     Toda la app mide en rem para que ese ajuste realmente escale. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: var(--color-bg);
   color: var(--color-text);
+  font-size: var(--fs-200);
+  line-height: 1.5;
   min-height: 100vh;
 }
 
@@ -40,16 +103,38 @@ button {
   cursor: pointer;
   border: none;
   font-family: inherit;
+  font-size: var(--fs-200);
+}
+
+/* --- Foco visible en TODO lo interactivo ---
+   Antes: `outline: none` global y cero estilos de foco en botones. Navegar con
+   teclado era imposible de seguir. */
+:focus-visible {
+  outline: 3px solid var(--color-secondary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* --- Botones --- */
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  min-height: var(--tap);
+  padding: var(--sp-3) var(--sp-5);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-200);
+  font-weight: 600;
+  line-height: 1.2;
+  transition: background-color 0.2s;
 }
 
 .btn-primary {
   background-color: var(--color-primary);
-  color: #1a1a1a;
-  font-weight: 600;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  transition: background-color 0.2s;
+  color: #1A1A1A;              /* 10.4:1 sobre el amarillo */
 }
 
 .btn-primary:hover {
@@ -58,12 +143,7 @@ button {
 
 .btn-secondary {
   background-color: var(--color-secondary);
-  color: #ffffff;
-  font-weight: 600;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  transition: background-color 0.2s;
+  color: #FFFFFF;
 }
 
 .btn-secondary:hover {
@@ -72,38 +152,122 @@ button {
 
 .btn-danger {
   background-color: #DC2626;
-  color: #ffffff;
-  font-weight: 600;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  transition: background-color 0.2s;
+  color: #FFFFFF;
 }
 
 .btn-danger:hover {
-  background-color: #B91C1C;
+  background-color: var(--color-danger);
+}
+
+/* Acciones de apoyo. Existen para que no haya tres botones de maxima prioridad
+   (amarillo + azul + rojo) compitiendo en la misma fila: solo la accion
+   principal va en color solido, el resto queda en contorno. */
+.btn-outline {
+  background-color: #fff;
+  color: var(--color-text-muted);
+  border: 2px solid var(--color-border-strong);
+}
+
+.btn-outline:hover {
+  background-color: var(--color-surface-alt);
+  border-color: var(--color-text-muted);
+  color: var(--color-text);
+}
+
+.btn-outline-danger {
+  background-color: #fff;
+  color: var(--color-danger);
+  border: 2px solid #DC2626;
+}
+
+.btn-outline-danger:hover {
+  background-color: var(--color-danger-bg);
+  border-color: var(--color-danger);
+}
+
+.btn-outline,
+.btn-outline-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  min-height: var(--tap);
+  padding: var(--sp-3) var(--sp-5);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-200);
+  font-weight: 600;
+  line-height: 1.2;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
 }
 
 .btn-primary:disabled,
 .btn-secondary:disabled,
-.btn-danger:disabled {
-  opacity: 0.5;
+.btn-danger:disabled,
+.btn-outline:disabled,
+.btn-outline-danger:disabled {
+  opacity: 0.55;
   cursor: not-allowed;
+}
+
+/* Variante compacta: sigue respetando el minimo tactil de 44px.
+   Antes .btn-sm medía ~28px y .btn-xs ~22px. */
+.btn-sm,
+.btn-outline.btn-sm,
+.btn-outline-danger.btn-sm {
+  min-height: var(--tap-min);
+  padding: var(--sp-2) var(--sp-4);
+  font-size: var(--fs-200);
+}
+
+.btn-icon-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap);
+  height: var(--tap);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-danger-border);
+  background: #FFF5F5;
+  color: var(--color-danger);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-icon-danger:hover {
+  background: var(--color-danger-bg);
+  border-color: #F87171;
 }
 
 .card {
   background: var(--color-card);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 20px;
+  padding: var(--sp-5);
 }
 
+/* --- Badges ---
+   El color de fondo NO es el unico canal: cada badge lleva un punto solido
+   del color de estado, para que se distingan sin depender de ver el matiz. */
 .badge {
-  display: inline-block;
-  padding: 3px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--sp-1) 10px;
   border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--fs-100);
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.badge::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
 }
 
 .badge-success {
@@ -118,22 +282,296 @@ button {
 
 .badge-danger {
   background-color: var(--color-danger-bg);
-  color: var(--color-danger);
+  color: var(--color-danger-strong);
 }
 
+/* --- Campos de formulario --- */
 input, select, textarea {
   font-family: inherit;
-  font-size: 14px;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 9px 12px;
+  font-size: var(--fs-200);   /* 16px: evita el zoom automatico de iOS Safari */
+  border: 2px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-3);
+  min-height: var(--tap);
   width: 100%;
-  outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.15s;
   background: #fff;
   color: var(--color-text);
 }
 
+input[type="checkbox"],
+input[type="radio"] {
+  width: auto;
+  min-height: 0;
+}
+
 input:focus, select:focus, textarea:focus {
   border-color: var(--color-secondary);
+}
+
+input::placeholder {
+  color: var(--color-text-subtle);
+  opacity: 1;
+}
+
+/* Solo para lectores de pantalla */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ============================================================
+   Tablas de datos
+   Las tres tablas (boletas, inventario, por cobrar) repetian el mismo bloque
+   de th/td en tres archivos, con padding y tamaños ligeramente distintos.
+   Se usa como `class="tabla mi-tabla"`; cada componente solo pone su min-width
+   y los ajustes de columna propios.
+   ============================================================ */
+.tabla-wrap {
+  overflow-x: auto;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-200);
+}
+
+.tabla thead th {
+  background: var(--color-surface-alt);
+  padding: var(--sp-3);
+  text-align: left;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  border-bottom: 2px solid var(--color-border);
+  font-size: var(--fs-100);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+/* Las celdas de cabecera de fila (<th scope="row">) se ven como datos: estan
+   ahi para que el lector de pantalla anuncie "Fideos, Precio S/ 2.50". */
+.tabla td,
+.tabla tbody th {
+  padding: var(--sp-3);
+  border-bottom: 1px solid #F3F4F6;
+  color: var(--color-text-muted);
+  text-align: left;
+  font-weight: 400;
+  vertical-align: middle;
+}
+
+.tabla tbody tr:last-child td,
+.tabla tbody tr:last-child th {
+  border-bottom: none;
+}
+
+.tabla tbody tr:hover td,
+.tabla tbody tr:hover th {
+  background: var(--color-surface-alt);
+}
+
+.tabla .col-id {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tabla .col-total {
+  font-weight: 700;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tabla .col-center {
+  text-align: center;
+}
+
+.tabla .col-acciones {
+  text-align: right;
+}
+
+/* Acciones de una fila, con separacion tactil suficiente. */
+.acciones-group,
+.acciones {
+  display: flex;
+  align-items: center;
+  gap: var(--tap-gap);
+}
+
+.acciones-group {
+  justify-content: flex-end;
+}
+
+/* --- Paginacion --- */
+.paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-4);
+  margin-top: var(--sp-5);
+  flex-wrap: wrap;
+}
+
+.pagina-info {
+  font-size: var(--fs-200);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+/* --- Campos de formulario --- */
+.form-group {
+  margin-bottom: var(--sp-4);
+}
+
+.form-group label {
+  display: block;
+  font-size: var(--fs-200);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: 6px;
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--sp-3);
+  justify-content: flex-end;
+  margin-top: var(--sp-5);
+  flex-wrap: wrap;
+}
+
+/* Un mensaje por campo, en lugar de un unico "Completa todos los campos". */
+.campo-error {
+  margin-top: 6px;
+  font-size: var(--fs-100);
+  font-weight: 600;
+  color: var(--color-danger);
+}
+
+.campo-ayuda {
+  display: block;
+  margin-top: 6px;
+  font-size: var(--fs-100);
+  color: var(--color-text-muted);
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+  font-size: var(--fs-200);
+}
+
+@media (max-width: 768px) {
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .form-actions button {
+    width: 100%;
+  }
+}
+
+/* ============================================================
+   Contenido proyectado dentro de <app-dialog>
+   El dialogo aporta overlay, tarjeta, cabecera y cierre; esto es lo que le
+   pasan dashboard y ventas como contenido.
+   ============================================================ */
+/* Las tablas de detalle scrollean en lugar de comprimirse. */
+.detalle-table-wrap {
+  overflow-x: auto;
+  margin: var(--sp-4) 0;
+}
+
+.detalle-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-200);
+  min-width: 420px;
+}
+
+.detalle-table th {
+  background: var(--color-surface-alt);
+  padding: 10px;
+  text-align: left;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.detalle-table td {
+  padding: 10px;
+  border-bottom: 1px solid #F3F4F6;
+  color: var(--color-text-muted);
+}
+
+.detalle-table tr:last-child td {
+  border-bottom: none;
+}
+
+.modal-total {
+  text-align: right;
+  font-size: var(--fs-300);
+  padding-top: var(--sp-2);
+  color: var(--color-text);
+}
+
+/* --- Enlace de salto ---
+   Primer elemento tabulable: permite saltarse los cinco enlaces de navegacion
+   en cada pagina. Invisible hasta que recibe el foco. */
+.skip-link {
+  position: absolute;
+  left: var(--sp-4);
+  top: -100px;
+  z-index: 3000;
+  background: var(--color-secondary);
+  color: #fff;
+  font-weight: 700;
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--radius-sm);
+  transition: top 0.15s;
+}
+
+.skip-link:focus {
+  top: var(--sp-4);
+}
+
+#contenido:focus {
+  outline: none;
+}
+
+/* --- Impresion ---
+   Al imprimir solo queda la hoja de la boleta: fuera cabecera, navegacion,
+   modales y el contenido de la ruta activa. */
+@media print {
+  .no-imprimir,
+  .contenido-app,
+  .skip-link {
+    display: none !important;
+  }
+
+  app-boleta-impresion {
+    display: block !important;
+  }
+
+  body {
+    background: #fff;
+  }
+}
+
+/* --- Respeto por quien pide menos movimiento --- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

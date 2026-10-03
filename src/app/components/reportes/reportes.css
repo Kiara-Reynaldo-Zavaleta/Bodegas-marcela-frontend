@@ -1,44 +1,34 @@
 .reportes-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 28px 24px 40px;
+  padding: var(--sp-6) var(--sp-6) var(--sp-8);
   display: flex;
   flex-direction: column;
-  gap: 20px;
-}
-
-.reportes-header {
-  margin-bottom: 4px;
+  gap: var(--sp-5);
 }
 
 .reportes-header h1 {
-  font-size: 24px;
+  font-size: var(--fs-500);
   font-weight: 700;
-  color: #111827;
+  color: var(--color-text);
 }
 
 .subtitulo {
-  font-size: 14px;
-  color: #6B7280;
-  margin-top: 4px;
+  font-size: var(--fs-200);
+  color: var(--color-text-muted);
+  margin-top: var(--sp-1);
 }
 
 .charts-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-@media (max-width: 860px) {
-  .charts-grid {
-    grid-template-columns: 1fr;
-  }
+  gap: var(--sp-5);
 }
 
 .chart-card {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--sp-1);
 }
 
 .chart-card--full {
@@ -46,26 +36,26 @@
 }
 
 .card-title {
-  font-size: 15px;
+  font-size: var(--fs-400);
   font-weight: 700;
-  color: #111827;
+  color: var(--color-text);
   margin: 0;
 }
 
 .card-subtitle {
-  font-size: 12px;
-  color: #9CA3AF;
-  margin: 0 0 12px;
+  font-size: var(--fs-100);
+  color: var(--color-text-muted);
+  margin: 0 0 var(--sp-3);
 }
 
 .chart-wrapper {
   position: relative;
-  height: 240px;
+  height: 260px;
   width: 100%;
 }
 
 .chart-wrapper--tall {
-  height: 280px;
+  height: 300px;
 }
 
 .chart-skeleton {
@@ -74,7 +64,7 @@
   background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
 @keyframes shimmer {
@@ -83,69 +73,80 @@
 }
 
 .empty-msg {
-  color: #9CA3AF;
-  font-size: 13px;
+  color: var(--color-text-muted);
+  font-size: var(--fs-200);
   text-align: center;
-  padding-top: 24px;
+  padding-top: var(--sp-6);
 }
 
 .historial-card {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--sp-3);
 }
 
 .dni-search {
   display: flex;
-  gap: 10px;
-  align-items: center;
+  gap: var(--sp-3);
+  align-items: stretch;
+  flex-wrap: wrap;
 }
 
 .dni-input {
-  max-width: 300px;
-  flex: 1;
+  width: 100%;
 }
 
 .historial-resumen {
+  margin: 0;
   display: flex;
-  gap: 20px;
+  gap: var(--sp-5);
   align-items: center;
-  background: #F9FAFB;
+  background: var(--color-surface-alt);
   border-radius: 10px;
-  padding: 12px 16px;
-  font-size: 13px;
-  color: #374151;
+  padding: var(--sp-3) var(--sp-4);
+  font-size: var(--fs-200);
+  color: var(--color-text-muted);
   flex-wrap: wrap;
 }
 
 .historial-resumen strong {
-  color: #111827;
+  color: var(--color-text);
 }
 
 .boletas-lista {
+  list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--sp-2);
 }
 
 .boleta-row {
-  border: 1px solid #E5E7EB;
+  border: 1px solid var(--color-border);
   border-radius: 10px;
   overflow: hidden;
 }
 
+/* Es un <button> de ancho completo: antes era un div con (click), inalcanzable
+   con teclado y sin anunciarse como control. */
 .boleta-row-header {
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  min-height: 56px;
+  padding: var(--sp-3) var(--sp-4);
+  background: none;
+  border: none;
+  font-family: inherit;
+  text-align: left;
   cursor: pointer;
   transition: background 0.15s;
-  gap: 12px;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
 }
 
 .boleta-row-header:hover {
-  background: #F9FAFB;
+  background: var(--color-surface-alt);
 }
 
 .boleta-row-info {
@@ -156,82 +157,103 @@
 
 .boleta-num {
   font-weight: 700;
-  font-size: 14px;
-  color: #111827;
+  font-size: var(--fs-200);
+  color: var(--color-text);
 }
 
 .boleta-fecha {
-  font-size: 12px;
-  color: #9CA3AF;
+  font-size: var(--fs-100);
+  color: var(--color-text-muted);
 }
 
 .boleta-row-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-3);
   flex-shrink: 0;
 }
 
 .boleta-total {
   font-weight: 700;
-  font-size: 14px;
-  color: #111827;
+  font-size: var(--fs-300);
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
 }
 
 .toggle-icon {
-  font-size: 10px;
-  color: #9CA3AF;
+  font-size: var(--fs-100);
+  color: var(--color-text-muted);
 }
 
 .boleta-detalles {
-  border-top: 1px solid #F3F4F6;
-  padding: 0 16px 12px;
-  background: #FAFAFA;
+  border-top: 1px solid var(--color-border);
+  padding: 0 var(--sp-4) var(--sp-3);
+  background: var(--color-surface-alt);
+  overflow-x: auto;
 }
 
-.detalle-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-  margin-top: 10px;
-}
-
-.detalle-table th {
-  background: #F3F4F6;
-  padding: 7px 10px;
-  text-align: left;
+/* Alternativa en tabla a los graficos: un <canvas> no dice nada a un lector de
+   pantalla, y leer una cifra exacta de un grafico con presbicia es dificil. */
+.ver-tabla {
+  align-self: flex-start;
+  min-height: var(--tap-min);
+  margin-top: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  background: none;
+  border: none;
+  color: var(--color-secondary);
+  font-size: var(--fs-200);
   font-weight: 600;
-  color: #6B7280;
-  border-bottom: 1px solid #E5E7EB;
+  text-decoration: underline;
+  cursor: pointer;
+  border-radius: 4px;
 }
 
-.detalle-table td {
-  padding: 7px 10px;
-  border-bottom: 1px solid #F3F4F6;
-  color: #374151;
+.tabla-datos {
+  margin-top: var(--sp-3);
 }
 
-.detalle-table tr:last-child td {
-  border-bottom: none;
+.dni-campo {
+  flex: 1 1 220px;
+  max-width: 320px;
 }
 
-.error-msg {
-  color: #EF4444;
-  font-size: 13px;
+.historial-resumen dt {
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.historial-resumen dt::after {
+  content: ':';
+}
+
+.historial-resumen dd {
+  margin: 0;
+  color: var(--color-text);
+}
+
+.historial-resumen div {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: baseline;
 }
 
 @media (max-width: 768px) {
   .reportes-container {
-    padding: 20px 16px 32px;
-    gap: 16px;
+    padding: var(--sp-5) var(--sp-4) var(--sp-8);
+    gap: var(--sp-4);
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr;
   }
 
   .chart-wrapper {
-    height: 200px;
+    height: 230px;
   }
 
   .chart-wrapper--tall {
-    height: 220px;
+    height: 250px;
   }
 
   .dni-search {
@@ -239,21 +261,14 @@
     align-items: stretch;
   }
 
-  .dni-input {
+  .dni-campo {
     max-width: 100%;
+    flex: 1 1 100%;
   }
 
-  .boleta-row-header {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .boleta-row-right {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .boleta-detalles {
-    overflow-x: auto;
+  .historial-resumen {
+    gap: var(--sp-2);
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

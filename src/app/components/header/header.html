@@ -1,19 +1,30 @@
 <header class="app-header">
   <a class="brand" routerLink="/" (click)="cerrarMenu()">
-    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9.5L12 4l9 5.5V20H3V9.5z"/>
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20V12h6v8"/>
     </svg>
     <span>Bodegas Marcela</span>
   </a>
 
-  <button class="hamburger" (click)="toggleMenu()" [class.abierto]="menuAbierto()" aria-label="Abrir menú">
+  <button
+    class="hamburger"
+    type="button"
+    (click)="toggleMenu()"
+    [class.abierto]="menuAbierto()"
+    [attr.aria-label]="menuAbierto() ? 'Cerrar menú' : 'Abrir menú'"
+    [attr.aria-expanded]="menuAbierto()"
+    aria-controls="menu-principal"
+  >
     <span></span>
     <span></span>
     <span></span>
   </button>
 
-  <nav class="nav-links" [class.nav-abierta]="menuAbierto()">
+  <nav class="nav-links" id="menu-principal" aria-label="Secciones" [class.nav-abierta]="menuAbierto()">
+    <!-- "Inicio" explicito: antes la unica forma de volver al panel era pulsar
+         el logo, y nadie da por hecho que un logo es un boton. -->
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="cerrarMenu()">Inicio</a>
     <a routerLink="/inventario" routerLinkActive="active" (click)="cerrarMenu()">Inventario</a>
     <a routerLink="/ventas" routerLinkActive="active" (click)="cerrarMenu()">Ventas</a>
     <a routerLink="/reportes" routerLinkActive="active" (click)="cerrarMenu()">Reportes</a>

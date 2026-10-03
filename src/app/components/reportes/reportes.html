@@ -1,124 +1,278 @@
 <div class="reportes-container">
   <div class="reportes-header">
     <h1>Reportes y Estadísticas</h1>
-    <p class="subtitulo">Análisis de ventas e historial de clientes</p>
+    <p class="subtitulo">Cómo van las ventas de la bodega</p>
   </div>
 
   <div class="charts-grid">
-    <div class="card chart-card">
-      <h2 class="card-title">Recaudado por Día</h2>
+    <section class="card chart-card">
+      <h2 class="card-title">Recaudado por día</h2>
       <p class="card-subtitle">Total de ventas según el día de la semana</p>
-      <div class="chart-wrapper">
-        @if (cargandoDia()) {
-          <div class="chart-skeleton"></div>
-        }
-        <canvas #canvasDia [style.display]="cargandoDia() ? 'none' : 'block'"></canvas>
-        @if (!cargandoDia() && datosDia().length === 0) {
-          <p class="empty-msg">Sin datos disponibles.</p>
-        }
-      </div>
-    </div>
 
-    <div class="card chart-card">
-      <h2 class="card-title">Productos más Vendidos</h2>
-      <p class="card-subtitle">Ranking por unidades vendidas</p>
-      <div class="chart-wrapper">
-        @if (cargandoProductos()) {
-          <div class="chart-skeleton"></div>
+      @if (errorDia()) {
+        <app-error-state
+          titulo="No se pudo cargar este reporte"
+          detalle="No hubo respuesta del sistema."
+          (reintentar)="cargarDia()"
+        />
+      } @else {
+        <div class="chart-wrapper">
+          @if (cargandoDia()) {
+            <div class="chart-skeleton" role="status" aria-label="Cargando el gráfico"></div>
+          }
+          <canvas #canvasDia
+            [style.display]="cargandoDia() ? 'none' : 'block'"
+            role="img"
+            aria-label="Gráfico de barras con el total recaudado por día de la semana. Usa el botón de abajo para verlo como tabla."
+          ></canvas>
+          @if (!cargandoDia() && datosDia().length === 0) {
+            <p class="empty-msg">Todavía no hay ventas suficientes para este reporte.</p>
+          }
+        </div>
+
+        @if (datosDia().length > 0) {
+          <button class="ver-tabla" type="button" (click)="alternarTabla('dia')"
+                  [attr.aria-expanded]="tablasVisibles()['dia']">
+            {{ tablasVisibles()['dia'] ? 'Ocultar los números' : 'Ver los números' }}
+          </button>
+
+          @if (tablasVisibles()['dia']) {
+            <div class="tabla-wrap">
+              <table class="tabla tabla-datos">
+                <thead>
+                  <tr>
+                    <th scope="col">Día</th>
+                    <th scope="col">Boletas</th>
+                    <th scope="col">Recaudado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (d of datosDia(); track d.dia) {
+                    <tr>
+                      <th scope="row">{{ d.dia }}</th>
+                      <td class="col-center">{{ d.cantidadBoletas }}</td>
+                      <td class="col-total">S/ {{ d.totalRecaudado | number:'1.2-2' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
         }
-        <canvas #canvasProductos [style.display]="cargandoProductos() ? 'none' : 'block'"></canvas>
-        @if (!cargandoProductos() && datosProductos().length === 0) {
-          <p class="empty-msg">Sin datos disponibles.</p>
+      }
+    </section>
+
+    <section class="card chart-card">
+      <h2 class="card-title">Productos más vendidos</h2>
+      <p class="card-subtitle">Los 8 que más unidades han salido</p>
+
+      @if (errorProductos()) {
+        <app-error-state
+          titulo="No se pudo cargar este reporte"
+          detalle="No hubo respuesta del sistema."
+          (reintentar)="cargarProductos()"
+        />
+      } @else {
+        <div class="chart-wrapper">
+          @if (cargandoProductos()) {
+            <div class="chart-skeleton" role="status" aria-label="Cargando el gráfico"></div>
+          }
+          <canvas #canvasProductos
+            [style.display]="cargandoProductos() ? 'none' : 'block'"
+            role="img"
+            aria-label="Gráfico de barras con los productos más vendidos por unidades. Usa el botón de abajo para verlo como tabla."
+          ></canvas>
+          @if (!cargandoProductos() && datosProductos().length === 0) {
+            <p class="empty-msg">Todavía no hay ventas suficientes para este reporte.</p>
+          }
+        </div>
+
+        @if (datosProductos().length > 0) {
+          <button class="ver-tabla" type="button" (click)="alternarTabla('productos')"
+                  [attr.aria-expanded]="tablasVisibles()['productos']">
+            {{ tablasVisibles()['productos'] ? 'Ocultar los números' : 'Ver los números' }}
+          </button>
+
+          @if (tablasVisibles()['productos']) {
+            <div class="tabla-wrap">
+              <table class="tabla tabla-datos">
+                <thead>
+                  <tr>
+                    <th scope="col">Producto</th>
+                    <th scope="col">Unidades vendidas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (p of datosProductos(); track p.nombre) {
+                    <tr>
+                      <th scope="row">{{ p.nombre }}</th>
+                      <td class="col-center">{{ p.cantidadVendida }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
         }
-      </div>
-    </div>
+      }
+    </section>
   </div>
 
-  <div class="card chart-card chart-card--full">
-    <h2 class="card-title">Ventas por Hora del Día</h2>
-    <p class="card-subtitle">Distribución horaria del volumen de ventas</p>
-    <div class="chart-wrapper chart-wrapper--tall">
-      @if (cargandoHoras()) {
-        <div class="chart-skeleton"></div>
-      }
-      <canvas #canvasHoras [style.display]="cargandoHoras() ? 'none' : 'block'"></canvas>
-      @if (!cargandoHoras() && datosHoras().length === 0) {
-        <p class="empty-msg">Sin datos disponibles.</p>
-      }
-    </div>
-  </div>
+  <section class="card chart-card chart-card--full">
+    <h2 class="card-title">Ventas por hora del día</h2>
+    <p class="card-subtitle">A qué horas se vende más</p>
 
-  <div class="card historial-card">
-    <h2 class="card-title">Historial por Cliente</h2>
-    <p class="card-subtitle">Consulta todas las boletas emitidas a un cliente por su DNI</p>
+    @if (errorHoras()) {
+      <app-error-state
+        titulo="No se pudo cargar este reporte"
+        detalle="No hubo respuesta del sistema."
+        (reintentar)="cargarHoras()"
+      />
+    } @else {
+      <div class="chart-wrapper chart-wrapper--tall">
+        @if (cargandoHoras()) {
+          <div class="chart-skeleton" role="status" aria-label="Cargando el gráfico"></div>
+        }
+        <canvas #canvasHoras
+          [style.display]="cargandoHoras() ? 'none' : 'block'"
+          role="img"
+          aria-label="Gráfico de líneas con las ventas por hora del día. Usa el botón de abajo para verlo como tabla."
+        ></canvas>
+        @if (!cargandoHoras() && datosHoras().length === 0) {
+          <p class="empty-msg">Todavía no hay ventas suficientes para este reporte.</p>
+        }
+      </div>
+
+      @if (datosHoras().length > 0) {
+        <button class="ver-tabla" type="button" (click)="alternarTabla('horas')"
+                [attr.aria-expanded]="tablasVisibles()['horas']">
+          {{ tablasVisibles()['horas'] ? 'Ocultar los números' : 'Ver los números' }}
+        </button>
+
+        @if (tablasVisibles()['horas']) {
+          <div class="tabla-wrap">
+            <table class="tabla tabla-datos">
+              <thead>
+                <tr>
+                  <th scope="col">Hora</th>
+                  <th scope="col">Ventas</th>
+                  <th scope="col">Recaudado</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (h of horasConVentas(); track h.hora) {
+                  <tr>
+                    <th scope="row">{{ etiquetaHora(h.hora) }}</th>
+                    <td class="col-center">{{ h.cantidadVentas }}</td>
+                    <td class="col-total">S/ {{ h.totalRecaudado | number:'1.2-2' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+    }
+  </section>
+
+  <section class="card historial-card">
+    <!-- Reformulado: antes se llamaba "Historial por Cliente" y parecia una
+         segunda version del historial de Ventas. Es otra pregunta: cuanto lleva
+         comprado un cliente en total. -->
+    <h2 class="card-title">¿Cuánto ha comprado un cliente?</h2>
+    <p class="card-subtitle">Busca por DNI para ver todas sus compras y el total acumulado</p>
 
     <div class="dni-search">
-      <input
-        type="text"
-        placeholder="Ingresa el DNI del cliente (8 dígitos)"
-        maxlength="8"
-        [(ngModel)]="dniSearch"
-        (keydown.enter)="buscarCliente()"
-        class="dni-input"
-      />
-      <button class="btn-secondary" (click)="buscarCliente()" [disabled]="cargandoCliente()">
+      <div class="dni-campo">
+        <label class="sr-only" for="r-dni">DNI del cliente</label>
+        <input
+          id="r-dni"
+          type="text"
+          inputmode="numeric"
+          placeholder="DNI del cliente (8 números)"
+          maxlength="8"
+          [ngModel]="dniSearch()"
+          (ngModelChange)="alEscribirDni($event)"
+          (keydown.enter)="buscarCliente()"
+          class="dni-input"
+          [attr.aria-invalid]="errorCliente() ? 'true' : null"
+          [attr.aria-describedby]="errorCliente() ? 'r-dni-error' : null"
+        />
+      </div>
+      <button class="btn-secondary" type="button" (click)="buscarCliente()" [disabled]="cargandoCliente()">
         {{ cargandoCliente() ? 'Buscando...' : 'Buscar' }}
       </button>
     </div>
 
     @if (errorCliente()) {
-      <p class="error-msg">{{ errorCliente() }}</p>
+      <p class="campo-error" id="r-dni-error" role="alert">{{ errorCliente() }}</p>
     }
 
     @if (!cargandoCliente() && dniConsultado()) {
       @if (boletasCliente().length === 0) {
-        <p class="empty-msg">No se encontraron boletas para el DNI {{ dniConsultado() }}.</p>
+        <p class="empty-msg">No hay ninguna compra registrada con el DNI {{ dniConsultado() }}.</p>
       } @else {
-        <div class="historial-resumen">
-          <span>DNI <strong>{{ dniConsultado() }}</strong></span>
-          <span>{{ boletasCliente().length }} boleta{{ boletasCliente().length !== 1 ? 's' : '' }}</span>
-          <span>Total acumulado:
-            <strong>S/ {{ totalCliente() | number:'1.2-2' }}</strong>
-          </span>
-        </div>
+        <dl class="historial-resumen">
+          <div><dt>DNI</dt><dd>{{ dniConsultado() }}</dd></div>
+          <div>
+            <dt>Compras</dt>
+            <dd>{{ boletasCliente().length }}</dd>
+          </div>
+          <div>
+            <dt>Total acumulado</dt>
+            <dd><strong>S/ {{ totalCliente() | number:'1.2-2' }}</strong></dd>
+          </div>
+        </dl>
 
-        <div class="boletas-lista">
+        <ul class="boletas-lista">
           @for (b of boletasCliente(); track b.id) {
-            <div class="boleta-row">
-              <div class="boleta-row-header" (click)="toggleBoleta(b.id)">
-                <div class="boleta-row-info">
-                  <span class="boleta-num">Boleta #{{ b.id.toString().padStart(3,'0') }}</span>
+            <li class="boleta-row">
+              <button
+                class="boleta-row-header"
+                type="button"
+                (click)="toggleBoleta(b.id)"
+                [attr.aria-expanded]="boletaExpandida() === b.id"
+              >
+                <span class="boleta-row-info">
+                  <span class="boleta-num">Boleta N.° {{ b.id.toString().padStart(3,'0') }}</span>
                   <span class="boleta-fecha">{{ b.fecha | date:'dd/MM/yyyy HH:mm' }}</span>
-                </div>
-                <div class="boleta-row-right">
+                </span>
+                <span class="boleta-row-right">
                   <span class="boleta-total">S/ {{ b.total | number:'1.2-2' }}</span>
-                  <span class="toggle-icon">{{ boletaExpandida() === b.id ? '▲' : '▼' }}</span>
-                </div>
-              </div>
+                  <span class="toggle-icon" aria-hidden="true">
+                    {{ boletaExpandida() === b.id ? '▲' : '▼' }}
+                  </span>
+                </span>
+              </button>
 
               @if (boletaExpandida() === b.id) {
                 <div class="boleta-detalles">
-                  <table class="detalle-table">
+                  <table class="tabla tabla-datos">
                     <thead>
-                      <tr><th>Producto</th><th>Cant.</th><th>P. Unit.</th><th>Subtotal</th></tr>
+                      <tr>
+                        <th scope="col">Producto</th>
+                        <th scope="col">Cant.</th>
+                        <th scope="col">P. Unit.</th>
+                        <th scope="col">Subtotal</th>
+                      </tr>
                     </thead>
                     <tbody>
                       @for (d of b.detalles; track d.productoId) {
                         <tr>
-                          <td>{{ d.productoNombre }}</td>
+                          <th scope="row">{{ d.productoNombre }}</th>
                           <td>{{ d.cantidad }}</td>
                           <td>S/ {{ d.precioUnitario | number:'1.2-2' }}</td>
-                          <td>S/ {{ d.subtotal | number:'1.2-2' }}</td>
+                          <td class="col-total">S/ {{ d.subtotal | number:'1.2-2' }}</td>
                         </tr>
                       }
                     </tbody>
                   </table>
                 </div>
               }
-            </div>
+            </li>
           }
-        </div>
+        </ul>
       }
     }
-  </div>
+  </section>
 </div>

@@ -1,0 +1,45 @@
+@if (boleta(); as b) {
+  <div class="hoja">
+    <div class="hoja-encabezado">
+      <h1>Bodegas Marcela</h1>
+      <p class="hoja-doc">Boleta de venta N.° {{ b.id.toString().padStart(3, '0') }}</p>
+    </div>
+
+    <dl class="hoja-datos">
+      <div><dt>Fecha</dt><dd>{{ b.fecha | date:'dd/MM/yyyy HH:mm' }}</dd></div>
+      <div><dt>Cliente</dt><dd>{{ b.clienteNombre || 'Cliente varios' }}</dd></div>
+      <div><dt>DNI</dt><dd>{{ b.clienteDni || '—' }}</dd></div>
+      <div><dt>Forma de pago</dt><dd>{{ b.formaPago }}</dd></div>
+      <div><dt>Estado</dt><dd>{{ b.estadoPago === 'FIADO' ? 'PENDIENTE DE PAGO (fiado)' : 'PAGADO' }}</dd></div>
+    </dl>
+
+    <table class="hoja-items">
+      <thead>
+        <tr>
+          <th scope="col">Producto</th>
+          <th scope="col">Cant.</th>
+          <th scope="col">P. unit.</th>
+          <th scope="col">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (d of b.detalles; track d.productoId) {
+          <tr>
+            <td>{{ d.productoNombre }}</td>
+            <td class="num">{{ d.cantidad }}</td>
+            <td class="num">S/ {{ d.precioUnitario | number:'1.2-2' }}</td>
+            <td class="num">S/ {{ d.subtotal | number:'1.2-2' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <p class="hoja-total">TOTAL: S/ {{ b.total | number:'1.2-2' }}</p>
+
+    @if (b.estadoPago === 'FIADO') {
+      <p class="hoja-aviso">Esta venta quedó registrada como fiado: pago pendiente.</p>
+    }
+
+    <p class="hoja-pie">¡Gracias por su compra!</p>
+  </div>
+}

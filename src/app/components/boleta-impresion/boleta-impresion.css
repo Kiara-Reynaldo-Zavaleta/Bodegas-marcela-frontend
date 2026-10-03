@@ -1,0 +1,97 @@
+/* Oculta en pantalla. Solo existe para el papel. */
+:host {
+  display: none;
+}
+
+.hoja {
+  font-family: 'Inter', sans-serif;
+  color: #000;
+  padding: 10mm;
+  max-width: 100%;
+}
+
+.hoja-encabezado {
+  text-align: center;
+  border-bottom: 2px solid #000;
+  padding-bottom: 6mm;
+  margin-bottom: 6mm;
+}
+
+.hoja-encabezado h1 {
+  font-size: 20pt;
+  font-weight: 700;
+  margin-bottom: 2mm;
+}
+
+.hoja-doc {
+  font-size: 12pt;
+  font-weight: 600;
+}
+
+.hoja-datos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2mm 6mm;
+  margin-bottom: 6mm;
+  font-size: 11pt;
+}
+
+.hoja-datos div {
+  display: flex;
+  gap: 2mm;
+}
+
+.hoja-datos dt {
+  font-weight: 700;
+}
+
+.hoja-datos dt::after {
+  content: ':';
+}
+
+.hoja-items {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11pt;
+  margin-bottom: 5mm;
+}
+
+.hoja-items th,
+.hoja-items td {
+  text-align: left;
+  padding: 2mm 1mm;
+  border-bottom: 1px solid #999;
+}
+
+.hoja-items th {
+  border-bottom: 2px solid #000;
+  font-weight: 700;
+}
+
+.hoja-items .num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.hoja-total {
+  text-align: right;
+  font-size: 15pt;
+  font-weight: 700;
+  border-top: 2px solid #000;
+  padding-top: 3mm;
+}
+
+.hoja-aviso {
+  margin-top: 5mm;
+  padding: 3mm;
+  border: 2px solid #000;
+  font-size: 11pt;
+  font-weight: 700;
+  text-align: center;
+}
+
+.hoja-pie {
+  margin-top: 10mm;
+  text-align: center;
+  font-size: 10pt;
+}

@@ -38,8 +38,20 @@ export class ApiService {
     );
   }
 
+  /** Reemplazo completo. Omitir un campo lo deja vacío: usar solo con el objeto entero. */
   updateProducto(id: number, data: ProductoForm): Observable<Producto> {
     return this.http.put<Producto>(`${this.base}/productos/${id}`, data);
+  }
+
+  /** Actualización parcial: solo toca los campos enviados. Es la que usa la
+   *  edición del inventario, para que añadir campos al backend no los borre. */
+  patchProducto(id: number, data: Partial<ProductoForm>): Observable<Producto> {
+    return this.http.patch<Producto>(`${this.base}/productos/${id}`, data);
+  }
+
+  /** Categorías existentes, según el backend. */
+  getCategorias(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.base}/categorias`);
   }
 
   deleteProducto(id: number): Observable<void> {
@@ -80,16 +92,27 @@ export class ApiService {
     );
   }
 
+  /**
+   * Normaliza lo que llega del backend. Los `?? ''` de cliente no son adorno:
+   * el buscador del historial hace `b.clienteDni.includes(...)`, y un null ahi
+   * tiraba la vista entera en cuanto alguien escribia en el campo de busqueda.
+   */
   private normalizarBoleta(b: any): Boleta {
     return {
       ...b,
+      clienteNombre: b.clienteNombre ?? '',
+      clienteDni:    b.clienteDni    ?? '',
+      total:         b.total         ?? 0,
       formaPago:  b.formaPago  ?? b.forma_pago  ?? undefined,
       estadoPago: b.estadoPago ?? b.estado_pago ?? undefined,
       detalles: (b.detalles ?? []).map((d: any) => ({
         ...d,
         productoId:     d.productoId     ?? d.producto?.id     ?? 0,
         productoNombre: d.productoNombre ?? d.producto?.nombre ?? '',
-        precioUnitario: d.precioUnitario ?? d.producto?.precio ?? 0,
+        cantidad:       d.cantidad       ?? 0,
+        subtotal:       d.subtotal       ?? 0,
+        precioUnitario: d.precioUnitario
+          ?? (d.cantidad ? (d.subtotal ?? 0) / d.cantidad : d.producto?.precio ?? 0),
       })),
     };
   }

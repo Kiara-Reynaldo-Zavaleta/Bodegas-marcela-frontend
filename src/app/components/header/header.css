@@ -1,11 +1,11 @@
 .app-header {
-  background: #fff;
-  border-bottom: 1px solid #E5E7EB;
+  background: var(--color-card);
+  border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 28px;
-  height: 64px;
+  padding: 0 var(--sp-6);
+  min-height: 64px;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -16,60 +16,73 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  min-height: var(--tap);
   font-weight: 700;
-  font-size: 17px;
-  color: #111827;
+  font-size: var(--fs-300);
+  color: var(--color-text);
   text-decoration: none;
 }
 
 .brand svg {
-  color: #FBBF24;
+  color: var(--color-accent-ink);
+  flex-shrink: 0;
 }
 
 .nav-links {
   display: flex;
-  gap: 28px;
+  gap: var(--sp-5);
 }
 
 .nav-links a {
-  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  padding: 0 var(--sp-1);
+  font-size: var(--fs-200);
   font-weight: 500;
-  color: #6B7280;
+  color: var(--color-text-muted);
   text-decoration: none;
-  transition: color 0.15s;
-  padding-bottom: 2px;
+  border-bottom: 3px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
 }
 
-.nav-links a:hover,
+.nav-links a:hover {
+  color: var(--color-text);
+}
+
+/* Activo: cambia color Y grosor de borde. El amarillo de marca sobre blanco
+   da 1.67:1, asi que el indicador usa --color-accent-ink (5.02:1). */
 .nav-links a.active {
-  color: #111827;
-  border-bottom: 2px solid #FBBF24;
+  color: var(--color-accent-ink-strong);
+  font-weight: 700;
+  border-bottom-color: var(--color-accent-ink);
 }
 
 .hamburger {
   display: none;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   gap: 5px;
   background: none;
   border: none;
   cursor: pointer;
-  padding: 4px;
-  height: 56px;
+  width: var(--tap);
+  height: var(--tap);
   flex-shrink: 0;
 }
 
 .hamburger span {
   display: block;
-  width: 24px;
-  height: 2px;
-  background: #111827;
+  width: 26px;
+  height: 3px;
+  background: var(--color-text);
   border-radius: 2px;
   transition: transform 0.22s ease, opacity 0.22s ease;
 }
 
 .hamburger.abierto span:nth-child(1) {
-  transform: translateY(7px) rotate(45deg);
+  transform: translateY(8px) rotate(45deg);
 }
 
 .hamburger.abierto span:nth-child(2) {
@@ -78,20 +91,19 @@
 }
 
 .hamburger.abierto span:nth-child(3) {
-  transform: translateY(-7px) rotate(-45deg);
+  transform: translateY(-8px) rotate(-45deg);
 }
 
 @media (max-width: 768px) {
   .app-header {
     flex-wrap: wrap;
-    padding: 0 16px;
-    height: auto;
-    min-height: 56px;
+    padding: 0 var(--sp-4);
+    min-height: 60px;
   }
 
   .brand {
-    height: 56px;
-    font-size: 16px;
+    min-height: 60px;
+    font-size: var(--fs-200);
   }
 
   .hamburger {
@@ -103,8 +115,8 @@
     flex-direction: column;
     gap: 0;
     width: 100%;
-    padding: 6px 0 10px;
-    border-top: 1px solid #E5E7EB;
+    padding: var(--sp-1) 0 var(--sp-2);
+    border-top: 1px solid var(--color-border);
   }
 
   .nav-links.nav-abierta {
@@ -112,8 +124,9 @@
   }
 
   .nav-links a {
-    padding: 13px 4px;
-    font-size: 15px;
+    min-height: var(--tap);
+    padding: var(--sp-3) var(--sp-1);
+    font-size: var(--fs-300);
     border-bottom: 1px solid #F3F4F6;
   }
 
@@ -121,19 +134,16 @@
     border-bottom: none;
   }
 
-  .nav-links a:hover,
+  /* En movil el indicador es una barra lateral: el borde inferior ya lo ocupa
+     el separador entre filas. */
   .nav-links a.active {
-    border-bottom: 1px solid #F3F4F6;
-    color: #111827;
+    color: var(--color-accent-ink-strong);
+    border-bottom-color: #F3F4F6;
+    border-left: 4px solid var(--color-accent-ink);
+    padding-left: var(--sp-3);
   }
 
-  .nav-links a.active {
-    color: #FBBF24;
-    font-weight: 700;
-  }
-
-  .nav-links a:last-child:hover,
   .nav-links a:last-child.active {
-    border-bottom: none;
+    border-bottom-color: transparent;
   }
 }

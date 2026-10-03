@@ -1,0 +1,73 @@
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-4);
+  z-index: 1000;
+}
+
+.dialog-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: var(--sp-6);
+  width: 100%;
+  max-width: 560px;
+  /* max-height + scroll: sin esto un formulario largo en pantalla baja o en
+     celular horizontal se corta y no se llega a los botones. */
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+
+.dialog-card--sm {
+  max-width: 480px;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-5);
+}
+
+.dialog-title {
+  font-size: var(--fs-400);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.dialog-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap);
+  height: var(--tap);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.dialog-close:hover {
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+}
+
+@media (max-width: 768px) {
+  .dialog-overlay {
+    align-items: flex-end;
+  }
+
+  .dialog-card,
+  .dialog-card--sm {
+    max-width: 100%;
+    max-height: 85vh;
+    padding: var(--sp-5) var(--sp-4);
+  }
+}

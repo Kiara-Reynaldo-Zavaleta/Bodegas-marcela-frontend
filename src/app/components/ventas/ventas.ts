@@ -1,11 +1,14 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgClass, DatePipe, DecimalPipe } from '@angular/common';
-import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { ModalService } from '../../services/modal.service';
+import { ImpresionService } from '../../services/impresion.service';
 import { Producto } from '../../models/producto.model';
 import { Boleta, DetalleBoleta, FormaPago } from '../../models/boleta.model';
+import { leerError, mensajeDeError, textoStockInsuficiente } from '../../errores';
+import { Dialog } from '../dialog/dialog';
+import { ErrorState } from '../error-state/error-state';
 
 const POR_PAGINA = 20;
 
@@ -13,22 +16,25 @@ const POR_PAGINA = 20;
   selector: 'app-ventas',
   templateUrl: './ventas.html',
   styleUrl: './ventas.css',
-  imports: [FormsModule, NgClass, DatePipe, DecimalPipe]
+  imports: [FormsModule, NgClass, DatePipe, DecimalPipe, Dialog, ErrorState]
 })
 export class Ventas implements OnInit {
-  private api   = inject(ApiService);
-  private router = inject(Router);
-  private modal  = inject(ModalService);
+  private api       = inject(ApiService);
+  private modal     = inject(ModalService);
+  private impresion = inject(ImpresionService);
 
   vista = signal<'nueva' | 'historial'>('nueva');
 
-  clienteNombre        = '';
-  clienteDni           = '';
-  busqueda             = '';
+  // --- Nueva venta ---
+  clienteNombre = signal('');
+  clienteDni    = signal('');
+  busqueda      = signal('');
   formaPago: FormaPago = 'EFECTIVO';
   esFiado              = false;
 
   productos            = signal<Producto[]>([]);
+  errorProductos       = signal(false);
+  cargandoProductos    = signal(true);
   detalles             = signal<DetalleBoleta[]>([]);
   confirmando          = signal(false);
   errorMsg             = signal('');
@@ -37,22 +43,20 @@ export class Ventas implements OnInit {
 
   private ultimoDniBuscado = '';
 
-  total = computed(() =>
-    this.detalles().reduce((acc, d) => acc + d.subtotal, 0)
-  );
+  total = computed(() => this.detalles().reduce((acc, d) => acc + d.subtotal, 0));
 
-  get productosFiltrados(): Producto[] {
-    const q = this.busqueda.toLowerCase().trim();
+  productosFiltrados = computed(() => {
+    const q = this.busqueda().toLowerCase().trim();
     if (!q) return this.productos();
     return this.productos().filter(p => p.nombre.toLowerCase().includes(q));
-  }
+  });
 
-  get puedeConfirmar(): boolean {
-    return this.detalles().length > 0;
-  }
+  puedeConfirmar = computed(() => this.detalles().length > 0);
 
+  // --- Historial ---
   boletas            = signal<Boleta[]>([]);
   cargandoHistorial  = signal(false);
+  errorHistorial     = signal(false);
   busquedaHistorial  = signal('');
   paginaActual       = signal(1);
   boletaSeleccionada = signal<Boleta | null>(null);
@@ -63,8 +67,7 @@ export class Ventas implements OnInit {
     const q = this.busquedaHistorial().toLowerCase().trim();
     if (!q) return this.boletas();
     return this.boletas().filter(b =>
-      b.clienteNombre.toLowerCase().includes(q) ||
-      b.clienteDni.includes(q)
+      b.clienteNombre.toLowerCase().includes(q) || b.clienteDni.includes(q)
     );
   });
 
@@ -78,22 +81,47 @@ export class Ventas implements OnInit {
   );
 
   ngOnInit() {
-    this.api.getProductos().subscribe({ next: data => this.productos.set(data) });
+    this.cargarProductos();
+  }
+
+  cargarProductos() {
+    this.cargandoProductos.set(true);
+    this.errorProductos.set(false);
+    this.api.getProductos().subscribe({
+      next: data => {
+        this.productos.set(data);
+        this.cargandoProductos.set(false);
+      },
+      // Antes esto dejaba el panel izquierdo en blanco y mudo: el mensaje de
+      // "sin resultados" solo aparecia si habia algo escrito en el buscador.
+      error: () => {
+        this.cargandoProductos.set(false);
+        this.errorProductos.set(true);
+      }
+    });
   }
 
   cambiarVista(v: 'nueva' | 'historial') {
     this.vista.set(v);
-    if (v === 'historial' && !this.boletasCargadas) {
-      this.cargandoHistorial.set(true);
-      this.api.getBoletas().subscribe({
-        next: data => {
-          this.boletas.set([...data].reverse());
-          this.boletasCargadas = true;
-          this.cargandoHistorial.set(false);
-        },
-        error: () => this.cargandoHistorial.set(false)
-      });
-    }
+    if (v === 'historial' && !this.boletasCargadas) this.cargarHistorial();
+  }
+
+  cargarHistorial() {
+    this.cargandoHistorial.set(true);
+    this.errorHistorial.set(false);
+    this.api.getBoletas().subscribe({
+      next: data => {
+        // Ordena por id en lugar de confiar en el orden del backend, igual que
+        // el panel: antes uno hacia reverse() y el otro ordenaba por id.
+        this.boletas.set([...data].sort((a, b) => b.id - a.id));
+        this.boletasCargadas = true;
+        this.cargandoHistorial.set(false);
+      },
+      error: () => {
+        this.cargandoHistorial.set(false);
+        this.errorHistorial.set(true);
+      }
+    });
   }
 
   onBusquedaHistorial(value: string) {
@@ -101,64 +129,64 @@ export class Ventas implements OnInit {
     this.paginaActual.set(1);
   }
 
-  anteriorPagina() {
-    if (this.paginaActual() > 1) this.paginaActual.update(p => p - 1);
-  }
+  anteriorPagina() { if (this.paginaActual() > 1) this.paginaActual.update(p => p - 1); }
+  siguientePagina() { if (this.paginaActual() < this.totalPaginas()) this.paginaActual.update(p => p + 1); }
 
-  siguientePagina() {
-    if (this.paginaActual() < this.totalPaginas()) this.paginaActual.update(p => p + 1);
-  }
+  verBoleta(boleta: Boleta) { this.boletaSeleccionada.set(boleta); }
+  cerrarDetalle() { this.boletaSeleccionada.set(null); }
 
-  verBoleta(boleta: Boleta) {
-    this.boletaSeleccionada.set(boleta);
-  }
-
-  cerrarDetalle() {
-    this.boletaSeleccionada.set(null);
-  }
+  imprimirBoleta(boleta: Boleta) { this.impresion.imprimir(boleta); }
 
   badgeEstadoPago(estadoPago: string): string {
     return estadoPago === 'FIADO' ? 'badge badge-warning' : 'badge badge-success';
   }
 
   async eliminarBoleta(boleta: Boleta) {
-    const resultado = await this.modal.open({
+    const ok = await this.modal.open({
       type: 'confirm',
-      title: '¿Eliminar boleta?',
+      title: '¿Eliminar esta boleta?',
       rows: [
-        { label: 'Cliente', value: boleta.clienteNombre },
+        { label: 'Boleta',  value: `N.° ${boleta.id.toString().padStart(3, '0')}` },
+        { label: 'Cliente', value: boleta.clienteNombre || 'Cliente varios' },
         { label: 'Total',   value: `S/ ${boleta.total.toFixed(2)}` }
       ],
-      confirmLabel: 'Eliminar',
-      cancelLabel: 'Cancelar',
+      advertencia: 'La venta saldrá de los reportes y de la caja, y los productos volverán al inventario. No se puede deshacer.',
+      confirmLabel: 'Sí, eliminar',
+      cancelLabel: 'No, conservar',
       confirmDanger: true
     });
-
-    if (!resultado) return;
+    if (!ok) return;
 
     this.api.deleteBoleta(boleta.id).subscribe({
-      next: () => this.boletas.update(list => list.filter(b => b.id !== boleta.id))
+      next: () => this.boletas.update(list => list.filter(b => b.id !== boleta.id)),
+      error: err => this.modal.alertarError(
+        'No se pudo eliminar',
+        mensajeDeError(err, 'eliminar la boleta') + ' La boleta sigue registrada.'
+      )
     });
   }
 
+  // --- Cliente ---
+
+  /** Solo digitos y maximo 8: el DNI se escribia como texto libre y aceptaba letras. */
   onDniChange(value: string) {
-    this.clienteDni = value;
-    if (value.length < 8 && this.nombreAutocompletado()) {
-      this.clienteNombre = '';
+    const limpio = (value ?? '').replace(/\D/g, '').slice(0, 8);
+    this.clienteDni.set(limpio);
+
+    if (limpio.length < 8 && this.nombreAutocompletado()) {
+      this.clienteNombre.set('');
       this.nombreAutocompletado.set(false);
       this.ultimoDniBuscado = '';
     }
-    if (value.length === 8 && value !== this.ultimoDniBuscado) {
-      this.ultimoDniBuscado = value;
-      this.buscarNombreCliente(value);
+    if (limpio.length === 8 && limpio !== this.ultimoDniBuscado) {
+      this.ultimoDniBuscado = limpio;
+      this.buscarNombreCliente(limpio);
     }
   }
 
   onNombreChange(value: string) {
-    this.clienteNombre = value;
-    if (this.nombreAutocompletado()) {
-      this.nombreAutocompletado.set(false);
-    }
+    this.clienteNombre.set(value);
+    if (this.nombreAutocompletado()) this.nombreAutocompletado.set(false);
   }
 
   private buscarNombreCliente(dni: string) {
@@ -168,12 +196,15 @@ export class Ventas implements OnInit {
         this.buscandoCliente.set(false);
         if (!boletas.length) return;
         const masReciente = boletas.reduce((max, b) => b.id > max.id ? b : max);
-        this.clienteNombre = masReciente.clienteNombre;
+        this.clienteNombre.set(masReciente.clienteNombre);
         this.nombreAutocompletado.set(true);
       },
+      // Es una comodidad, no una funcion critica: si falla, se escribe a mano.
       error: () => this.buscandoCliente.set(false)
     });
   }
+
+  // --- Carrito ---
 
   agregarProducto(producto: Producto) {
     if (producto.stock === 0) return;
@@ -181,12 +212,7 @@ export class Ventas implements OnInit {
     const existe = this.detalles().find(d => d.productoId === producto.id);
     if (existe) {
       if (existe.cantidad >= producto.stock) return;
-      this.detalles.update(list =>
-        list.map(d => d.productoId === producto.id
-          ? { ...d, cantidad: d.cantidad + 1, subtotal: (d.cantidad + 1) * d.precioUnitario }
-          : d
-        )
-      );
+      this.incrementar(producto.id);
     } else {
       this.detalles.update(list => [...list, {
         productoId: producto.id,
@@ -234,41 +260,73 @@ export class Ventas implements OnInit {
     return !prod || cantidadActual >= prod.stock;
   }
 
+  // --- Confirmacion ---
+
   confirmarVenta() {
-    if (!this.puedeConfirmar || this.confirmando()) return;
+    if (!this.puedeConfirmar() || this.confirmando()) return;
     this.confirmando.set(true);
     this.errorMsg.set('');
 
     this.api.createBoleta({
-      clienteNombre: this.clienteNombre.trim() || 'Cliente varios',
-      clienteDni:    this.clienteDni.trim() || '',
+      clienteNombre: this.clienteNombre().trim() || 'Cliente varios',
+      clienteDni:    this.clienteDni().trim(),
       formaPago:     this.formaPago,
       estadoPago:    this.esFiado ? 'FIADO' : 'PAGADO',
       items:         this.detalles().map(d => ({ productoId: d.productoId, cantidad: d.cantidad }))
     }).subscribe({
-      next: (boleta) => {
+      next: boleta => {
         this.confirmando.set(false);
-        this.detalles.set([]);
-        this.clienteNombre = '';
-        this.clienteDni    = '';
-        this.busqueda      = '';
-        this.formaPago     = 'EFECTIVO';
-        this.esFiado       = false;
-        this.nombreAutocompletado.set(false);
-        this.ultimoDniBuscado = '';
-        this.boletasCargadas  = false;
+        const eraFiado = this.esFiado;
+        this.limpiarFormulario();
+
+        // El stock se recarga: antes los topes de cantidad seguian saliendo de
+        // los datos de la primera carga, cada vez mas desactualizados.
+        this.cargarProductos();
 
         this.modal.open({
           type: 'success',
-          title: 'Venta registrada',
-          message: `Boleta #${boleta.id.toString().padStart(3, '0')} · Total S/ ${boleta.total.toFixed(2)}`,
-          confirmLabel: 'Aceptar'
-        }).then(() => this.router.navigate(['/']));
+          title: '¡Venta registrada!',
+          rows: [
+            { label: 'Boleta', value: `N.° ${boleta.id.toString().padStart(3, '0')}` },
+            { label: 'Total',  value: `S/ ${boleta.total.toFixed(2)}` },
+            { label: 'Pago',   value: eraFiado ? 'Fiado (pendiente)' : boleta.formaPago }
+          ],
+          confirmLabel: 'Imprimir boleta',
+          cancelLabel: 'Seguir vendiendo'
+        }).then(imprimir => {
+          if (imprimir) this.impresion.imprimir(boleta);
+        });
+        // Se queda en "Nueva Venta": antes navegaba al panel y volver a vender
+        // costaba dos clics mas por cada cliente.
       },
-      error: () => {
+      error: err => {
         this.confirmando.set(false);
-        this.errorMsg.set('Error al registrar la venta. Intente nuevamente.');
+        const e = leerError(err);
+
+        if (e.codigo === 'STOCK_INSUFICIENTE') {
+          // El backend dice exactamente qué producto y cuánto queda, así que se
+          // dice en lugar de un "algo falló". Y se recarga el stock, porque el
+          // que tenía la pantalla ya estaba desactualizado.
+          this.errorMsg.set(textoStockInsuficiente(e));
+          this.cargarProductos();
+          return;
+        }
+        this.errorMsg.set(
+          mensajeDeError(err, 'registrar la venta') + ' No se ha cobrado nada.'
+        );
       }
     });
+  }
+
+  private limpiarFormulario() {
+    this.detalles.set([]);
+    this.clienteNombre.set('');
+    this.clienteDni.set('');
+    this.busqueda.set('');
+    this.formaPago = 'EFECTIVO';
+    this.esFiado   = false;
+    this.nombreAutocompletado.set(false);
+    this.ultimoDniBuscado = '';
+    this.boletasCargadas  = false;
   }
 }

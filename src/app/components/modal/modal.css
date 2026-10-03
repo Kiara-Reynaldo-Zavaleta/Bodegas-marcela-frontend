@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: center;
   z-index: 2000;
-  padding: 16px;
+  padding: var(--sp-4);
   animation: fadeIn 0.15s ease;
 }
 
@@ -19,13 +19,15 @@
   background: #ffffff;
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0, 0, 0, 0.08);
-  padding: 32px 28px 24px;
+  padding: var(--sp-8) var(--sp-6) var(--sp-6);
   width: 100%;
-  max-width: 400px;
+  max-width: 440px;
+  max-height: 90vh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-3);
   animation: slideUp 0.2s ease;
 }
 
@@ -35,52 +37,52 @@
 }
 
 .modal-icon {
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 4px;
+  margin-bottom: var(--sp-1);
   flex-shrink: 0;
 }
 
 .modal-icon--success {
-  background: #D1FAE5;
-  color: #059669;
+  background: var(--color-success-bg);
+  color: var(--color-success);
 }
 
 .modal-icon--info {
   background: #DBEAFE;
-  color: #1D4ED8;
+  color: var(--color-secondary-hover);
 }
 
 .modal-icon--error {
-  background: #FEE2E2;
-  color: #DC2626;
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
 }
 
 .modal-icon--confirm {
-  background: #FEE2E2;
-  color: #DC2626;
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
 }
 
 .modal-icon--prompt {
-  background: #FEF3C7;
-  color: #D97706;
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
 }
 
 .modal-title {
-  font-size: 18px;
+  font-size: var(--fs-400);
   font-weight: 700;
-  color: #111827;
+  color: var(--color-text);
   text-align: center;
   margin: 0;
 }
 
 .modal-message {
-  font-size: 14px;
-  color: #6B7280;
+  font-size: var(--fs-200);
+  color: var(--color-text-muted);
   text-align: center;
   margin: 0;
   line-height: 1.5;
@@ -88,17 +90,18 @@
 
 .modal-rows {
   width: 100%;
-  background: #F9FAFB;
+  margin: var(--sp-1) 0 0;
+  background: var(--color-surface-alt);
   border-radius: 10px;
-  padding: 4px 0;
-  margin-top: 4px;
+  padding: var(--sp-1) 0;
 }
 
 .modal-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 16px;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
   border-bottom: 1px solid #F3F4F6;
 }
 
@@ -107,51 +110,44 @@
 }
 
 .row-label {
-  font-size: 13px;
-  color: #6B7280;
+  font-size: var(--fs-200);
+  color: var(--color-text-muted);
   font-weight: 500;
 }
 
 .row-value {
-  font-size: 14px;
-  color: #111827;
+  font-size: var(--fs-200);
+  color: var(--color-text);
   font-weight: 700;
+  text-align: right;
+  margin: 0;
 }
 
 .modal-input-group {
   width: 100%;
-  margin-top: 4px;
+  margin-top: var(--sp-1);
 }
 
 .modal-input-label {
   display: block;
-  font-size: 13px;
+  font-size: var(--fs-200);
   font-weight: 600;
-  color: #374151;
+  color: var(--color-text-muted);
   margin-bottom: 6px;
 }
 
+/* Hereda tamaño, borde y anillo de foco de los inputs globales: el anillo
+   amarillo anterior (#FBBF24) no se distinguia del fondo blanco. */
 .modal-input {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #D1D5DB;
-  border-radius: 8px;
-  font-size: 15px;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.15s;
-  color: #111827;
-}
-
-.modal-input:focus {
-  border-color: #FBBF24;
-  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15);
+  font-size: var(--fs-300);
+  text-align: center;
+  font-weight: 600;
 }
 
 .modal-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 8px;
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
   width: 100%;
 }
 
@@ -165,7 +161,67 @@
 
 .modal-btn {
   flex: 1;
-  padding: 11px 20px;
-  font-size: 14px;
-  border-radius: 9px;
+  min-height: 52px;
+  font-size: var(--fs-200);
+  border-radius: 10px;
+}
+
+/* Aviso de accion irreversible. Antes borrar una boleta o un producto se
+   confirmaba sin decir en ningun lado que no hay deshacer. */
+.modal-advertencia {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  width: 100%;
+  background: var(--color-danger-bg);
+  border: 1px solid var(--color-danger-border);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-3);
+  font-size: var(--fs-100);
+  font-weight: 600;
+  color: var(--color-danger-strong);
+  text-align: left;
+}
+
+.modal-advertencia svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.modal-input-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.modal-input-sufijo {
+  font-size: var(--fs-200);
+  color: var(--color-text-muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.modal-input-error {
+  margin-top: 6px;
+  font-size: var(--fs-100);
+  font-weight: 600;
+  color: var(--color-danger);
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  .modal-card {
+    padding: var(--sp-6) var(--sp-4) var(--sp-5);
+    max-height: 88vh;
+  }
+
+  /* En movil las acciones se apilan: dos botones de 52px lado a lado quedan
+     demasiado estrechos para leer "Confirmar pago" o "Cancelar". */
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-btn {
+    width: 100%;
+  }
 }

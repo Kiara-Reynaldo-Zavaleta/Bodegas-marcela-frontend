@@ -1,50 +1,64 @@
 <div class="cobrar-container">
   <div class="cobrar-header">
     <h1>Cuentas por Cobrar</h1>
-    <p>Ventas marcadas como fiado pendientes de pago</p>
+    <p>Ventas marcadas como fiado que todavía no se han pagado</p>
   </div>
 
-  @if (loading()) {
-    <div class="card"><p class="text-muted">Cargando...</p></div>
+  @if (cargando()) {
+    <div class="card"><p class="text-muted" role="status">Cargando...</p></div>
+  } @else if (errorCarga()) {
+    <div class="card">
+      <app-error-state
+        titulo="No se pudieron cargar las cuentas por cobrar"
+        detalle="No hubo respuesta del sistema, así que no se sabe quién debe. Revisa tu conexión y vuelve a intentarlo: no se ha borrado ninguna deuda."
+        (reintentar)="cargar()"
+      />
+    </div>
   } @else if (boletas().length === 0) {
     <div class="card empty-state">
-      <p>No hay cuentas pendientes de cobro.</p>
+      <p>No hay cuentas pendientes de cobro. Todo al día.</p>
     </div>
   } @else {
-    <div class="resumen-bar">
-      <span>{{ boletas().length }} cuenta(s) pendiente(s)</span>
-      <strong>Total pendiente: S/ {{ totalPendiente() | number:'1.2-2' }}</strong>
-    </div>
+    <p class="resumen-bar">
+      <span>
+        {{ boletas().length }}
+        {{ boletas().length === 1 ? 'cuenta pendiente' : 'cuentas pendientes' }}
+      </span>
+      <strong>Total por cobrar: S/ {{ totalPendiente() | number:'1.2-2' }}</strong>
+    </p>
 
     <div class="card tabla-card">
-      <table class="cobrar-table">
+      <table class="tabla cobrar-table">
+        <caption class="sr-only">Deudas pendientes de cobro</caption>
         <thead>
           <tr>
-            <th>#</th>
-            <th>Cliente</th>
-            <th>DNI</th>
-            <th>Fecha</th>
-            <th>Forma de pago</th>
-            <th>Total</th>
-            <th></th>
+            <th scope="col">#</th>
+            <th scope="col">Cliente</th>
+            <th scope="col">DNI</th>
+            <th scope="col">Fecha de la venta</th>
+            <th scope="col">Forma de pago</th>
+            <th scope="col">Total</th>
+            <th scope="col"><span class="sr-only">Acciones</span></th>
           </tr>
         </thead>
         <tbody>
           @for (boleta of boletas(); track boleta.id) {
             <tr>
-              <td class="col-id">{{ boleta.id.toString().padStart(3, '0') }}</td>
-              <td>{{ boleta.clienteNombre }}</td>
-              <td>{{ boleta.clienteDni || '-' }}</td>
+              <th scope="row" class="col-id">{{ boleta.id.toString().padStart(3, '0') }}</th>
+              <td>{{ boleta.clienteNombre || 'Cliente varios' }}</td>
+              <td>{{ boleta.clienteDni || '—' }}</td>
               <td>{{ boleta.fecha | date:'dd/MM/yyyy' }}</td>
               <td>{{ boleta.formaPago }}</td>
               <td class="col-total">S/ {{ boleta.total | number:'1.2-2' }}</td>
               <td class="col-accion">
                 <button
                   class="btn-primary btn-sm"
+                  type="button"
                   [disabled]="procesando() === boleta.id"
                   (click)="marcarPagado(boleta)"
                 >
-                  {{ procesando() === boleta.id ? 'Procesando...' : 'Marcar pagado' }}
+                  {{ procesando() === boleta.id ? 'Procesando...' : 'Ya pagó' }}
+                  <span class="sr-only"> — boleta {{ boleta.id }}</span>
                 </button>
               </td>
             </tr>

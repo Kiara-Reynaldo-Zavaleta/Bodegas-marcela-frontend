@@ -1,128 +1,226 @@
 <div class="inventario-container">
   <div class="inv-header">
-    <h2>Inventario de Productos</h2>
-    <button class="btn-primary" (click)="abrirFormulario()">+ Añadir Nuevo Producto</button>
+    <h1>Inventario de Productos</h1>
+    <button class="btn-primary" type="button" (click)="abrirAlta()">+ Añadir Nuevo Producto</button>
   </div>
 
   <div class="card table-card">
-    <input type="text" class="buscador" placeholder="Buscar producto..." [(ngModel)]="busqueda" />
+    <div class="filtros">
+      <div class="filtro-busqueda">
+        <label class="filtro-label" for="inv-buscar">Buscar producto</label>
+        <input
+          id="inv-buscar"
+          type="search"
+          placeholder="Escribe un nombre..."
+          [ngModel]="busqueda()"
+          (ngModelChange)="alBuscar($event)"
+        />
+      </div>
 
-    @if (loading()) {
-      <p class="text-muted">Cargando inventario...</p>
+      <div class="filtro-categoria">
+        <label class="filtro-label" for="inv-categoria">Categoría</label>
+        <select id="inv-categoria" [ngModel]="categoriaFiltro()" (ngModelChange)="filtrarCategoria($event)">
+          <option value="">Todas las categorías</option>
+          @for (cat of categorias(); track cat) {
+            <option [value]="cat">{{ cat }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    @if (cargando()) {
+      <p class="text-muted" role="status">Cargando inventario...</p>
+    } @else if (errorCarga()) {
+      <app-error-state
+        titulo="No se pudo cargar el inventario"
+        detalle="No hubo respuesta del sistema. Revisa tu conexión y vuelve a intentarlo: no se ha borrado ningún producto."
+        (reintentar)="cargar()"
+      />
     } @else {
-      <table class="tabla-inventario">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Nombre</th>
-            <th>Precio</th>
-            <th>Stock</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (p of productosFiltrados; track p.id) {
-            <tr>
-              <td class="id-col">{{ p.id }}</td>
-              <td class="nombre-col">{{ p.nombre }}</td>
-              <td>S/ {{ p.precio | number:'1.2-2' }}</td>
-              <td>
-                <span [class.stock-bajo]="p.stock <= 5">{{ p.stock }}</span>
-              </td>
-              <td>
-                @if (p.stock === 0) {
-                  <span class="badge badge-danger">Agotado</span>
-                } @else if (p.stock <= 5) {
-                  <span class="badge badge-warning">Stock bajo</span>
-                } @else {
-                  <span class="badge badge-success">Disponible</span>
-                }
-              </td>
-              <td>
-                <div class="acciones">
-                  <button class="btn-primary btn-sm" (click)="anadirStock(p)">+ Stock</button>
-                  <button class="btn-secondary btn-sm" (click)="abrirEdicion(p)">Editar</button>
-                  <button class="btn-danger btn-sm" (click)="eliminarProducto(p)">Eliminar</button>
-                </div>
-              </td>
-            </tr>
-          }
-          @if (productosFiltrados.length === 0) {
-            <tr>
-              <td colspan="6" class="text-muted text-center">Sin productos encontrados.</td>
-            </tr>
-          }
-        </tbody>
-      </table>
+      <p class="resultado-conteo" role="status">
+        {{ productosFiltrados().length }}
+        {{ productosFiltrados().length === 1 ? 'producto' : 'productos' }}
+        @if (hayFiltro()) {
+          de {{ productos().length }} en total
+          <button class="enlace-limpiar" type="button" (click)="limpiarFiltros()">Quitar filtros</button>
+        }
+      </p>
+
+      @if (productosFiltrados().length === 0) {
+        <p class="sin-resultados">
+          Ningún producto coincide con lo que buscas. Prueba con otro nombre o quita los filtros.
+        </p>
+      } @else {
+        <div class="tabla-wrap">
+          <table class="tabla tabla-inventario">
+            <caption class="sr-only">Productos del inventario con su precio, stock y acciones</caption>
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Categoría</th>
+                <th scope="col">Precio</th>
+                <th scope="col">Stock</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of productosPaginados(); track p.id) {
+                <tr>
+                  <td class="col-id">{{ p.id }}</td>
+                  <th scope="row" class="nombre-col">{{ p.nombre }}</th>
+                  <td>{{ p.categoria || '—' }}</td>
+                  <td class="precio-col">S/ {{ p.precio | number:'1.2-2' }}</td>
+                  <td class="stock-col">
+                    <span [class.stock-bajo]="p.stock <= STOCK_BAJO">{{ p.stock }}</span>
+                  </td>
+                  <td>
+                    @if (p.stock === 0) {
+                      <span class="badge badge-danger">Agotado</span>
+                    } @else if (p.stock <= STOCK_BAJO) {
+                      <span class="badge badge-warning">Stock bajo</span>
+                    } @else {
+                      <span class="badge badge-success">Disponible</span>
+                    }
+                  </td>
+                  <td>
+                    <div class="acciones">
+                      <button class="btn-primary btn-sm" type="button" (click)="anadirStock(p)">
+                        + Stock<span class="sr-only"> de {{ p.nombre }}</span>
+                      </button>
+                      <button class="btn-outline btn-sm" type="button" (click)="abrirEdicion(p)">
+                        Editar<span class="sr-only"> {{ p.nombre }}</span>
+                      </button>
+                      <button class="btn-outline-danger btn-sm" type="button" (click)="eliminarProducto(p)">
+                        Eliminar<span class="sr-only"> {{ p.nombre }}</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (totalPaginas() > 1) {
+          <div class="paginacion">
+            <button class="btn-outline btn-sm" type="button" [disabled]="pagina() === 1" (click)="anteriorPagina()">
+              Anterior
+            </button>
+            <span class="pagina-info" role="status">Página {{ pagina() }} de {{ totalPaginas() }}</span>
+            <button class="btn-outline btn-sm" type="button" [disabled]="pagina() >= totalPaginas()" (click)="siguientePagina()">
+              Siguiente
+            </button>
+          </div>
+        }
+      }
     }
   </div>
 </div>
 
-@if (mostrarFormulario()) {
-  <div class="modal-overlay" (click)="cerrarFormulario()">
-    <div class="modal-card" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>Nuevo Producto</h3>
-        <button class="close-btn" (click)="cerrarFormulario()">✕</button>
-      </div>
-      <form (ngSubmit)="guardarProducto()" #formNuevo="ngForm">
-        <div class="form-group">
-          <label>Nombre</label>
-          <input type="text" [(ngModel)]="nuevoNombre" name="nombre" required placeholder="Ej. Fideos Don Vittorio" />
-        </div>
-        <div class="form-group">
-          <label>Precio (S/)</label>
-          <input type="number" [(ngModel)]="nuevoPrecio" name="precio" required min="0.01" step="0.01" placeholder="0.00" />
-        </div>
-        <div class="form-group">
-          <label>Stock inicial</label>
-          <input type="number" [(ngModel)]="nuevoStock" name="stock" required min="0" placeholder="0" />
-        </div>
-        @if (errorForm()) {
-          <p class="error-msg">{{ errorForm() }}</p>
+@if (modoForm()) {
+  <app-dialog
+    [titulo]="modoForm() === 'editar' ? 'Editar producto' : 'Nuevo producto'"
+    tamano="sm"
+    (cerrar)="cerrarForm()"
+  >
+    <form (ngSubmit)="guardar()">
+      <div class="form-group">
+        <label for="f-nombre">Nombre del producto</label>
+        <input
+          id="f-nombre"
+          type="text"
+          [(ngModel)]="form.nombre"
+          name="nombre"
+          placeholder="Ej. Fideos Don Vittorio"
+          [attr.aria-invalid]="errores()['nombre'] ? 'true' : null"
+          [attr.aria-describedby]="errores()['nombre'] ? 'e-nombre' : null"
+        />
+        @if (errores()['nombre']) {
+          <p class="campo-error" id="e-nombre">{{ errores()['nombre'] }}</p>
         }
-        <div class="form-actions">
-          <button type="button" class="btn-secondary" (click)="cerrarFormulario()">Cancelar</button>
-          <button type="submit" class="btn-primary" [disabled]="guardando()">
-            {{ guardando() ? 'Guardando...' : 'Guardar Producto' }}
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-}
+      </div>
 
-@if (productoEditando()) {
-  <div class="modal-overlay" (click)="cerrarEdicion()">
-    <div class="modal-card" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>Editar Producto</h3>
-        <button class="close-btn" (click)="cerrarEdicion()">✕</button>
-      </div>
-      <form (ngSubmit)="guardarEdicion()" #formEdicion="ngForm">
-        <div class="form-group">
-          <label>Nombre</label>
-          <input type="text" [(ngModel)]="editNombre" name="editNombre" required placeholder="Nombre del producto" />
-        </div>
-        <div class="form-group">
-          <label>Precio (S/)</label>
-          <input type="number" [(ngModel)]="editPrecio" name="editPrecio" required min="0.01" step="0.01" placeholder="0.00" />
-        </div>
-        <div class="form-group">
-          <label>Stock</label>
-          <input type="number" [(ngModel)]="editStock" name="editStock" required min="0" placeholder="0" />
-        </div>
-        @if (errorEdicion()) {
-          <p class="error-msg">{{ errorEdicion() }}</p>
+      <div class="form-group">
+        <label for="f-categoria">Categoría</label>
+        <select
+          id="f-categoria"
+          [(ngModel)]="form.categoria"
+          name="categoria"
+          [attr.aria-invalid]="errores()['categoria'] ? 'true' : null"
+          [attr.aria-describedby]="errores()['categoria'] ? 'e-categoria' : null"
+        >
+          <option value="">Elige una categoría</option>
+          @for (cat of categorias(); track cat) {
+            <option [value]="cat">{{ cat }}</option>
+          }
+          <option [value]="OTRA">+ Otra categoría nueva</option>
+        </select>
+
+        @if (form.categoria === OTRA) {
+          <input
+            class="categoria-nueva"
+            type="text"
+            [(ngModel)]="form.categoriaNueva"
+            name="categoriaNueva"
+            placeholder="Nombre de la nueva categoría"
+            aria-label="Nombre de la nueva categoría"
+          />
         }
-        <div class="form-actions">
-          <button type="button" class="btn-secondary" (click)="cerrarEdicion()">Cancelar</button>
-          <button type="submit" class="btn-primary" [disabled]="guardandoEdicion()">
-            {{ guardandoEdicion() ? 'Guardando...' : 'Guardar Cambios' }}
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
+
+        @if (errores()['categoria']) {
+          <p class="campo-error" id="e-categoria">{{ errores()['categoria'] }}</p>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="f-precio">Precio en soles</label>
+        <!-- Texto, no number: asi acepta "2,50" como se escribe en Perú. -->
+        <input
+          id="f-precio"
+          type="text"
+          inputmode="decimal"
+          [(ngModel)]="form.precio"
+          name="precio"
+          placeholder="Ej. 2.50"
+          [attr.aria-invalid]="errores()['precio'] ? 'true' : null"
+          [attr.aria-describedby]="errores()['precio'] ? 'e-precio' : 'ayuda-precio'"
+        />
+        @if (errores()['precio']) {
+          <p class="campo-error" id="e-precio">{{ errores()['precio'] }}</p>
+        } @else {
+          <p class="campo-ayuda" id="ayuda-precio">Puedes escribirlo con punto o con coma.</p>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="f-stock">{{ modoForm() === 'editar' ? 'Stock' : 'Stock inicial' }}</label>
+        <input
+          id="f-stock"
+          type="text"
+          inputmode="numeric"
+          [(ngModel)]="form.stock"
+          name="stock"
+          placeholder="Ej. 12"
+          [attr.aria-invalid]="errores()['stock'] ? 'true' : null"
+          [attr.aria-describedby]="errores()['stock'] ? 'e-stock' : null"
+        />
+        @if (errores()['stock']) {
+          <p class="campo-error" id="e-stock">{{ errores()['stock'] }}</p>
+        }
+      </div>
+
+      @if (errores()['general']) {
+        <p class="campo-error campo-error--general" role="alert">{{ errores()['general'] }}</p>
+      }
+
+      <div class="form-actions">
+        <button type="button" class="btn-outline" (click)="cerrarForm()">Cancelar</button>
+        <button type="submit" class="btn-primary" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando...' : (modoForm() === 'editar' ? 'Guardar cambios' : 'Guardar producto') }}
+        </button>
+      </div>
+    </form>
+  </app-dialog>
 }

@@ -12,10 +12,14 @@ export interface ModalConfig {
   title: string;
   message?: string;
   rows?: ModalRow[];
+  /** Linea destacada para acciones irreversibles ("no se puede deshacer"). */
+  advertencia?: string;
   confirmDanger?: boolean;
   inputLabel?: string;
   inputPlaceholder?: string;
   inputMin?: number;
+  /** Sufijo del campo numerico, p. ej. "unidades". */
+  inputSufijo?: string;
   confirmLabel?: string;
   cancelLabel?: string;
 }
@@ -31,6 +35,15 @@ export class ModalService {
     return new Promise(resolve => {
       this.resolver = resolve;
     });
+  }
+
+  /**
+   * Aviso de que una accion fallo. Se usa en lugar de dejar el error en la
+   * consola: si "Añadir stock" no se guardo, la usuaria tiene que enterarse,
+   * porque si no vuelve a pulsar y duplica, o cree que si se guardo.
+   */
+  alertarError(title: string, message: string): Promise<string | null> {
+    return this.open({ type: 'error', title, message, confirmLabel: 'Entendido' });
   }
 
   confirm(value: string | null = 'ok') {

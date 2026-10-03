@@ -1,0 +1,17 @@
+<div class="estado-error" role="alert">
+  <svg class="estado-error-icono" xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636a9 9 0 010 12.728m-12.728 0a9 9 0 010-12.728m9.9 9.9a5 5 0 010-7.072m-7.072 0a5 5 0 010 7.072M12 12h.01"/>
+    <path stroke-linecap="round" stroke-linejoin="round" d="M3 3l18 18"/>
+  </svg>
+
+  <div class="estado-error-texto">
+    <p class="estado-error-titulo">{{ titulo() }}</p>
+    <p class="estado-error-detalle">{{ detalle() }}</p>
+  </div>
+
+  @if (mostrarReintento()) {
+    <button type="button" class="btn-outline" (click)="reintentar.emit()">
+      Volver a intentar
+    </button>
+  }
+</div>
